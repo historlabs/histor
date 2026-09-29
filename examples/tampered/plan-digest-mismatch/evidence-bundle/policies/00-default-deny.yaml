@@ -1,0 +1,41 @@
+# Default deny, in every segment. Everything else in this directory is an exception
+# to this file, and there are exactly two of them.
+#
+# Ingress and egress both. A policy that denies ingress only leaves the model free to
+# dial out, which is the one thing the sandbox forbids absolutely.
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: default-deny
+  namespace: sandbox-a-data
+spec:
+  endpointSelector: {}
+  ingress:
+    - {}
+  egress:
+    - {}
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: default-deny
+  namespace: sandbox-b-relay
+spec:
+  endpointSelector: {}
+  ingress:
+    - {}
+  egress:
+    - {}
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: default-deny
+  namespace: sandbox-c-model
+spec:
+  endpointSelector: {}
+  ingress:
+    - {}
+  egress:
+    - {}

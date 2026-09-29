@@ -1,0 +1,899 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://historlabs.eu/spec/predicate.schema.json",
+  "title": "Sandbox run predicate v0.1",
+  "description": "Predicate body of an in-toto Statement v1 with predicateType https://historlabs.eu/run/v0.1. Signed by the harness signing key. Everything needed to decide whether a run's stated outcome follows from what was actually run, WITHOUT access to the data. The verifier recomputes threshold outcomes from these numbers; if it cannot, the field is missing and the predicate is wrong.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "sandbox_id",
+    "plan_digest",
+    "run_number",
+    "started_at",
+    "ended_at",
+    "backend",
+    "inference_params",
+    "isolation_evidence",
+    "relay_log_digest",
+    "model_stdout_digest",
+    "results",
+    "outcome"
+  ],
+  "properties": {
+    "sandbox_id": {
+      "type": "string"
+    },
+    "plan_digest": {
+      "$ref": "#/$defs/sha256_digest"
+    },
+    "run_number": {
+      "description": "Monotonic per sandbox, starting at 1. Contiguity is what stops a provider running ten times and reporting the best; the verifier checks for gaps.",
+      "type": "integer",
+      "minimum": 1
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "ended_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "backend": {
+      "description": "Where the run executed. Must agree with isolation_evidence.type: each backend can produce exactly one kind of isolation evidence, so a mismatch means the predicate claims more (or other) than happened.",
+      "enum": [
+        "kubernetes",
+        "slurm",
+        "local"
+      ]
+    },
+    "hardware": {
+      "$ref": "#/$defs/hardware"
+    },
+    "inference_params": {
+      "$ref": "#/$defs/inference_params"
+    },
+    "harness_config": {
+      "$ref": "#/$defs/harness_config"
+    },
+    "isolation_evidence": {
+      "$ref": "#/$defs/isolation_evidence"
+    },
+    "relay_log_digest": {
+      "$ref": "#/$defs/sha256_digest"
+    },
+    "model_stdout_digest": {
+      "$ref": "#/$defs/sha256_digest"
+    },
+    "harness_statement_digest": {
+      "description": "Digest of the harness's own signed statement of what it measured (harness-statements.jsonl in the bundle). The control plane completes this attestation; the harness signed its measurements in segment A, and the verifier checks the two agree. For a run scored off an HPC centre (driver_statement_digest present), the measurement statement is the scorer's, signed with the scorer key where the labels are.",
+      "$ref": "#/$defs/sha256_digest"
+    },
+    "driver_statement_digest": {
+      "description": "Only for a run whose scoring was kept off an HPC centre (spec/run-attestation.md, section 1b). Digest of the driver's signed statement of what it observed in the job (predicate type https://historlabs.eu/driver-observation/v0.1, signed with the harness key released to the job, carried in harness-statements.jsonl). The scorer's statement cites the same digest and the same responses; the verifier checks that the two agree and that each result's counts are the ones the driver observed.",
+      "$ref": "#/$defs/sha256_digest"
+    },
+    "results": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/test_result"
+      }
+    },
+    "outcome": {
+      "enum": [
+        "pass",
+        "fail",
+        "halted"
+      ]
+    },
+    "halt_reason": {
+      "type": "string",
+      "minLength": 1
+    },
+    "initiated_by": {
+      "description": "Present only on a run the notified body initiated (AI Act Annex VII, point 4.4), as the gate's run_started entry says it. An ordinary run, requested by the regulator or the provider for a test in the plan, carries neither this nor authorisation.",
+      "const": "notified_body"
+    },
+    "authorisation": {
+      "description": "What authorised a run the notified body initiated, copied from its run_started entry: the proposal (its ledger seq and digest) and either the approvals the plan's notified_body_tests.approvers gave (route pre_authorised, the approvals' ledger seqs) or the amendment that adopted it (route amendment, the plan version and its plan_signed seq). The verifier walks this chain in the ledger (check nb_tests).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "proposal_seq",
+        "proposal_digest",
+        "route"
+      ],
+      "properties": {
+        "proposal_seq": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "proposal_digest": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "route": {
+          "enum": [
+            "pre_authorised",
+            "amendment"
+          ]
+        },
+        "approvals": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "plan_digest": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "plan_signed_seq": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "outcome": {
+            "const": "halted"
+          }
+        },
+        "required": [
+          "outcome"
+        ]
+      },
+      "then": {
+        "required": [
+          "halt_reason"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "backend": {
+            "const": "kubernetes"
+          }
+        },
+        "required": [
+          "backend"
+        ]
+      },
+      "then": {
+        "required": [
+          "hardware"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "backend": {
+            "const": "kubernetes"
+          }
+        },
+        "required": [
+          "backend"
+        ]
+      },
+      "then": {
+        "properties": {
+          "isolation_evidence": {
+            "properties": {
+              "type": {
+                "const": "cilium"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "backend": {
+            "const": "slurm"
+          }
+        },
+        "required": [
+          "backend"
+        ]
+      },
+      "then": {
+        "properties": {
+          "isolation_evidence": {
+            "properties": {
+              "type": {
+                "const": "hpc_centre"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "backend": {
+            "const": "local"
+          }
+        },
+        "required": [
+          "backend"
+        ]
+      },
+      "then": {
+        "properties": {
+          "isolation_evidence": {
+            "properties": {
+              "type": {
+                "const": "local_process"
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "sha256_digest": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "hardware": {
+      "description": "Results are valid for the hardware they were produced on and no other. GPU heterogeneity across EuroHPC centres makes this load-bearing rather than decorative.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "accelerator",
+        "node_id_hash"
+      ],
+      "properties": {
+        "accelerator": {
+          "type": "string",
+          "minLength": 1
+        },
+        "accelerator_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "driver_version": {
+          "type": "string"
+        },
+        "runtime_version": {
+          "description": "CUDA or ROCm version.",
+          "type": "string"
+        },
+        "node_id_hash": {
+          "description": "Hashed, not plain: the node identity must be comparable across runs without being disclosed.",
+          "$ref": "#/$defs/sha256_digest"
+        },
+        "container_runtime": {
+          "type": "string"
+        }
+      }
+    },
+    "inference_params": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "temperature",
+        "seeds",
+        "prompt_digest"
+      ],
+      "properties": {
+        "temperature": {
+          "type": "number",
+          "minimum": 0
+        },
+        "seeds": {
+          "description": "Every seed used, in order. The harness always sends one; recording them is what makes determinism a test rather than a hope.",
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "integer"
+          }
+        },
+        "prompt_digest": {
+          "$ref": "#/$defs/sha256_digest"
+        },
+        "response_schema_digest": {
+          "$ref": "#/$defs/sha256_digest"
+        }
+      }
+    },
+    "harness_config": {
+      "description": "How the request stream was built. In the attestation because 'the model could not infer the dataset boundaries' is a claim, and this is its evidence.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "shuffled": {
+          "type": "boolean"
+        },
+        "decoy_fraction": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "repeat_fraction": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "metadata_stripped": {
+          "type": "boolean"
+        },
+        "shuffle_seed": {
+          "type": "integer"
+        }
+      }
+    },
+    "isolation_evidence": {
+      "description": "Tagged union. The verifier must handle both arms even though the MVP produces only cilium.",
+      "type": "object",
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "enum": [
+            "cilium",
+            "hpc_centre",
+            "local_process"
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "cilium"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/isolation_cilium"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "hpc_centre"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/isolation_hpc_centre"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "local_process"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/isolation_local_process"
+          }
+        }
+      ]
+    },
+    "isolation_cilium": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "network_policy_digest",
+        "drop_log_digest"
+      ],
+      "properties": {
+        "type": {
+          "const": "cilium"
+        },
+        "network_policy_digest": {
+          "description": "Must equal the plan's pin. Results produced under a different policy are results from a different experiment.",
+          "$ref": "#/$defs/sha256_digest"
+        },
+        "drop_log_digest": {
+          "description": "Digest over the Hubble drop events captured for this run. Blocked attempts are evidence, so an empty drop log is a claim in its own right.",
+          "$ref": "#/$defs/sha256_digest"
+        },
+        "drop_event_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "namespaces": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true
+        },
+        "image_signatures": {
+          "$ref": "#/$defs/image_signatures"
+        },
+        "tee": {
+          "$ref": "#/$defs/tee"
+        }
+      }
+    },
+    "image_signatures": {
+      "description": "Whether the sandbox itself verified the images' signatures before launch (histor/backends/imagesig.py), and against which policy. Optional: evidence made before it existed has none, and says nothing about signatures. verified: every image verified under the policy; partially_verified: the policy had rules for some images only, and those verified; not_verified_by_sandbox: no policy was configured, so the sandbox checked nothing and signature_verified in the ledger is only the host's statement. A failed check never appears here, because a run whose images fail is not launched.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "verified",
+            "partially_verified",
+            "not_verified_by_sandbox"
+          ]
+        },
+        "policy_digest": {
+          "description": "SHA-256 over the canonical JSON of the policy's rules, public keys included by content.",
+          "$ref": "#/$defs/sha256_digest"
+        },
+        "verifier": {
+          "description": "What checked the signatures, e.g. cosign.",
+          "type": "string",
+          "minLength": 1
+        },
+        "note": {
+          "type": "string"
+        },
+        "images": {
+          "description": "Per workload: the reference checked (repository@digest) and its status.",
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "reference",
+              "status"
+            ],
+            "properties": {
+              "reference": {
+                "type": "string",
+                "minLength": 1
+              },
+              "status": {
+                "enum": [
+                  "verified",
+                  "not_verified_by_sandbox"
+                ]
+              }
+            }
+          }
+        }
+      },
+      "if": {
+        "properties": {
+          "status": {
+            "enum": [
+              "verified",
+              "partially_verified"
+            ]
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "policy_digest",
+          "images"
+        ]
+      }
+    },
+    "isolation_hpc_centre": {
+      "description": "Where no user-controlled network policy exists, someone vouches for exclusive allocation and node configuration by signing the job record and the node configuration. signed_by says who: the centre, with its own key, or the sandbox operator, whose courier observed the job through the project's login. The operator's word is weaker than a centre's, and both are weaker than a policy anyone can hash; the verifier must name who signed rather than treating the arms as equivalent. An arm without signed_by predates it: it is the centre's, and its signature is in centre_signature.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "centre",
+        "job_record_digest",
+        "node_config_digest"
+      ],
+      "properties": {
+        "type": {
+          "const": "hpc_centre"
+        },
+        "centre": {
+          "type": "string",
+          "minLength": 1
+        },
+        "job_record_digest": {
+          "$ref": "#/$defs/sha256_digest"
+        },
+        "node_config_digest": {
+          "$ref": "#/$defs/sha256_digest"
+        },
+        "signed_by": {
+          "description": "Whose word the claim rests on. centre: the centre's key, recorded in the ledger as hpc_centre_key. sandbox_operator: the sandbox operator's key, recorded as hpc_operator_key.",
+          "enum": [
+            "centre",
+            "sandbox_operator"
+          ]
+        },
+        "signature": {
+          "description": "Base64 of a DSSE envelope (histor/crypto/signing.py) over this object without its signature fields, signed with the key signed_by names.",
+          "type": "string",
+          "minLength": 1
+        },
+        "centre_signature": {
+          "description": "The centre's signature, as signature, under its name before signed_by existed. Accepted only for the centre: without signed_by, or with signed_by centre.",
+          "type": "string",
+          "minLength": 1
+        },
+        "exclusive_allocation": {
+          "type": "boolean"
+        },
+        "tee": {
+          "$ref": "#/$defs/tee"
+        }
+      },
+      "dependentRequired": {
+        "signature": [
+          "signed_by"
+        ]
+      },
+      "allOf": [
+        {
+          "if": {
+            "not": {
+              "required": [
+                "signed_by"
+              ]
+            }
+          },
+          "then": {
+            "required": [
+              "centre_signature"
+            ]
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "signed_by"
+            ],
+            "properties": {
+              "signed_by": {
+                "const": "centre"
+              }
+            }
+          },
+          "then": {
+            "anyOf": [
+              {
+                "required": [
+                  "signature"
+                ]
+              },
+              {
+                "required": [
+                  "centre_signature"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "signed_by"
+            ],
+            "properties": {
+              "signed_by": {
+                "const": "sandbox_operator"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "signature"
+            ],
+            "not": {
+              "required": [
+                "centre_signature"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "measurement": {
+      "description": "A number and what makes it admissible. A bare scalar is not reportable: the exit report has to state how it was obtained and how uncertain it is, and the verifier cannot check a pass on a group of four items unless n is here.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "value",
+        "n"
+      ],
+      "properties": {
+        "value": {
+          "type": "number"
+        },
+        "n": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "ci_low": {
+          "type": "number"
+        },
+        "ci_high": {
+          "type": "number"
+        },
+        "confidence_level": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "exclusiveMaximum": 1
+        },
+        "method": {
+          "description": "How the value and interval were obtained: 'wilson', 'bootstrap(2000)', 'mean of 5 runs'.",
+          "type": "string"
+        },
+        "insufficient_sample": {
+          "description": "True when n fell below the plan's min_items_per_group. The value is then reported for completeness and MUST NOT be scored against a threshold.",
+          "type": "boolean",
+          "default": false
+        }
+      }
+    },
+    "test_result": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "test_id",
+        "type",
+        "outcome",
+        "metrics"
+      ],
+      "properties": {
+        "test_id": {
+          "type": "string"
+        },
+        "type": {
+          "enum": [
+            "accuracy_by_group",
+            "rate_by_group",
+            "robustness",
+            "determinism",
+            "decision_logging",
+            "adversarial_robustness",
+            "fail_safe"
+          ]
+        },
+        "dataset_id": {
+          "type": "string"
+        },
+        "dataset_commitment": {
+          "$ref": "#/$defs/sha256_digest"
+        },
+        "items_evaluated": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "metrics": {
+          "description": "Overall measurement per metric name, e.g. {\"mae\": {...}}.",
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/measurement"
+          }
+        },
+        "by_group": {
+          "description": "metric name -> group attribute -> group value -> measurement. For adversarial_robustness the attribute 'attack' holds one rate per planned attack; for fail_safe the attribute 'input_kind' holds one rate per kind of out-of-scope input. Those are conditions, not demographic groups, and never leave segment A as anything but these rates.",
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/$defs/measurement"
+              }
+            }
+          }
+        },
+        "baseline": {
+          "description": "Same shape as metrics, for the plan's baseline predictor. Present whenever the plan declared a baseline other than none.",
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/measurement"
+          }
+        },
+        "perturbation_curve": {
+          "description": "Robustness only: perturbation name -> parameter value -> measurement, so the degradation curve is in the evidence rather than a single before-and-after pair.",
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/$defs/measurement"
+            }
+          }
+        },
+        "method_digest": {
+          "description": "adversarial_robustness and fail_safe: digest over the code that generated the inputs (the attacks or the out-of-scope generators). The plan fixes the parameters; this fixes what they mean.",
+          "$ref": "#/$defs/sha256_digest"
+        },
+        "thresholds_evaluated": {
+          "description": "Every threshold the plan set for this test, the observed value, and whether it held. The verifier recomputes these; a mismatch fails the bundle.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/threshold_evaluation"
+          }
+        },
+        "outcome": {
+          "enum": [
+            "pass",
+            "fail",
+            "not_evaluated"
+          ]
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    },
+    "threshold_evaluation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "limit",
+        "observed",
+        "comparison",
+        "held"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "limit": {
+          "type": "number"
+        },
+        "observed": {
+          "type": "number"
+        },
+        "comparison": {
+          "enum": [
+            "lte",
+            "gte",
+            "lt",
+            "gt"
+          ]
+        },
+        "held": {
+          "type": "boolean"
+        },
+        "scope": {
+          "description": "Which group or perturbation the worst observed value came from, when the threshold is per-group.",
+          "type": "string"
+        }
+      }
+    },
+    "isolation_local_process": {
+      "description": "No isolation was enforced. Emitted when a run happens on a developer machine or in CI, where the harness, the relay and the model are ordinary processes on one host with full network access. It exists so that such a run can still produce a well-formed attestation for development and demonstration — and so that it CANNOT be mistaken for one that was isolated. The alternative, emitting cilium-shaped evidence without Cilium, would be fabricating evidence. A verifier must report a bundle carrying this arm as unattested for isolation and must never pass it as sandbox evidence.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "note"
+      ],
+      "properties": {
+        "type": {
+          "const": "local_process"
+        },
+        "note": {
+          "description": "Why no isolation was enforced, in words a reader will see in the verifier's output.",
+          "type": "string",
+          "minLength": 1
+        },
+        "host": {
+          "type": "string"
+        },
+        "model_egress": {
+          "description": "Where the model sent each item, when the provider forwards to a hosted model rather than running the weights itself. Present means the test data left the host: a verifier must say so beside the isolation caveat.",
+          "type": "string",
+          "minLength": 1
+        },
+        "tee": {
+          "$ref": "#/$defs/tee"
+        }
+      }
+    },
+    "tee": {
+      "description": "Optional. Present when the run's keys were released to a trusted execution environment (TEE) on the strength of a hardware attestation report: what identifies that report and what it attests. The report itself, its collateral and the binding are in the run's key_released ledger entry, where the verifier checks them again (check tee_attestation). Platform mock is software made for tests and the demo and is never hardware evidence.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "platform",
+        "report_digest",
+        "measurement",
+        "init_data_digest",
+        "tcb",
+        "collateral_digest"
+      ],
+      "properties": {
+        "platform": {
+          "enum": [
+            "sev-snp",
+            "tdx",
+            "mock"
+          ]
+        },
+        "report_digest": {
+          "description": "SHA-256 of the raw report bytes.",
+          "$ref": "#/$defs/sha256_digest"
+        },
+        "measurement": {
+          "description": "The launch measurement (SEV-SNP MEASUREMENT, TDX MRTD), lowercase hex.",
+          "type": "string",
+          "pattern": "^[0-9a-f]+$"
+        },
+        "init_data_digest": {
+          "description": "The launch configuration that pins the harness image (SEV-SNP HOST_DATA, TDX MRCONFIGID), lowercase hex.",
+          "type": "string",
+          "pattern": "^[0-9a-f]+$"
+        },
+        "tcb": {
+          "description": "The platform's TCB level by component: integers, or lowercase hex for TDX's tee_tcb_svn.",
+          "type": "object",
+          "additionalProperties": {
+            "oneOf": [
+              {
+                "type": "integer",
+                "minimum": 0
+              },
+              {
+                "type": "string",
+                "pattern": "^[0-9a-f]+$"
+              }
+            ]
+          }
+        },
+        "gpu": {
+          "description": "GPU attestation evidence, carried and not yet verified (phase P2).",
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "collateral_digest": {
+          "description": "SHA-256 of the canonical JSON of the collateral captured at release time.",
+          "$ref": "#/$defs/sha256_digest"
+        }
+      }
+    }
+  },
+  "dependentRequired": {
+    "initiated_by": [
+      "authorisation"
+    ],
+    "authorisation": [
+      "initiated_by"
+    ]
+  }
+}

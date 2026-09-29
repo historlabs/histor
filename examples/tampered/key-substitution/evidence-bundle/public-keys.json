@@ -1,0 +1,9 @@
+{
+  "control-plane": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAGNoBBbyXz52ac68go6VFzauC61a/floIjx5Y9vIy4WA=\n-----END PUBLIC KEY-----\n",
+  "harness": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEA4MEAq5xioSppk+i0Pat2T7sHPQi4DydhCWBROdCq+lA=\n-----END PUBLIC KEY-----\n",
+  "provider": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEA1ykAqu4ZpMkXjQFMq9Jyh5eWnpKH+TUUPtyqz0HJ/0Y=\n-----END PUBLIC KEY-----\n",
+  "regulator": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEA2zUPlc+FHehJnUExknliuqwwi9ASiJQnAnVUqVsW7C4=\n-----END PUBLIC KEY-----\n",
+  "sandbox-operator": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAtPVGMn7wHNfvTsNGduhhk7rzvG1ezRR8AwYv+q/2H5c=\n-----END PUBLIC KEY-----\n",
+  "test-lab": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAjidRaJ8qfBWFITIe5UbdpvPzDyEx5RYt/W1dl9KNg58=\n-----END PUBLIC KEY-----\n",
+  "timestamp-authority": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAQ/UOJcHlQ74g+wdHpA2KZhsT6cTJyRScLbJe1ROePyo=\n-----END PUBLIC KEY-----\n"
+}

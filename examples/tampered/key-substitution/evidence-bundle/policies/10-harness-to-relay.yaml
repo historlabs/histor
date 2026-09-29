@@ -1,0 +1,58 @@
+# Allow rule 1 of 2: segment A may reach the relay, on one port.
+#
+# Note what is NOT here: no DNS egress for the harness beyond the cluster resolver,
+# and no rule anywhere that lets segment A reach segment C. Segment A has no route to
+# the model at all; every request goes through the relay, which is what makes the
+# relay's hash log a complete record of what the model was asked.
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: harness-egress-to-relay
+  namespace: sandbox-a-data
+spec:
+  endpointSelector:
+    matchLabels:
+      app: harness
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            app: relay
+            k8s:io.kubernetes.pod.namespace: sandbox-b-relay
+      toPorts:
+        - ports:
+            - port: "8080"
+              protocol: TCP
+    # Cluster DNS only, and only to resolve the relay's service name. Without this
+    # the harness cannot find the relay; with anything broader it could resolve
+    # names outside the cluster.
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: kube-system
+            k8s:k8s-app: kube-dns
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: UDP
+          rules:
+            dns:
+              - matchName: relay.sandbox-b-relay.svc.cluster.local
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: relay-ingress-from-harness
+  namespace: sandbox-b-relay
+spec:
+  endpointSelector:
+    matchLabels:
+      app: relay
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            app: harness
+            k8s:io.kubernetes.pod.namespace: sandbox-a-data
+      toPorts:
+        - ports:
+            - port: "8080"
+              protocol: TCP

@@ -1,0 +1,63 @@
+# Allow rule 2 of 2: the relay may reach the model, on one port, and the model may
+# answer on that connection.
+#
+# The model has NO egress rule of its own anywhere in this directory. It cannot
+# initiate a connection to the relay, to segment A, to DNS or to the internet. It can
+# only answer connections the relay opened, and every attempt it makes to do
+# otherwise is dropped by the default-deny policy and recorded by Hubble as evidence.
+#
+# The path allow-list (POST /v1/chat/completions, GET /health, GET /v1/models) is
+# enforced by the relay rather than here: a layer-7 rule in Cilium could match the
+# path, but it could not validate the response body against the profile's schema, and
+# response validation is the control that closes the exfiltration channel.
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: relay-egress-to-model
+  namespace: sandbox-b-relay
+spec:
+  endpointSelector:
+    matchLabels:
+      app: relay
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            app: provider
+            k8s:io.kubernetes.pod.namespace: sandbox-c-model
+      toPorts:
+        - ports:
+            - port: "8000"
+              protocol: TCP
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: kube-system
+            k8s:k8s-app: kube-dns
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: UDP
+          rules:
+            dns:
+              - matchName: provider.sandbox-c-model.svc.cluster.local
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: model-ingress-from-relay-only
+  namespace: sandbox-c-model
+spec:
+  endpointSelector:
+    matchLabels:
+      app: provider
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            app: relay
+            k8s:io.kubernetes.pod.namespace: sandbox-b-relay
+      toPorts:
+        - ports:
+            - port: "8000"
+              protocol: TCP
+  # No egress section. Not an empty one — none at all, so the default-deny policy in
+  # this namespace is the last word on what the model may initiate: nothing.

@@ -1,0 +1,214 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://historlabs.eu/written-proof/v0.1",
+  "title": "Sandbox written proof v0.1",
+  "description": "The JSON form of the written proof (AI Act Art. 57(7); draft implementing act of December 2025, Art. 6(2), not adopted), as histor/report/written_proof.build emits it and histor/report/written_proof.write writes it beside the Markdown. Built from the plan and the ledger. The exit report names it by sha256, so the regulator's signature over the report covers it. Machine-readable for notified bodies, market surveillance authorities and registries; it carries aggregate outcomes per test and run, never item-level data.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "legal_basis",
+    "status",
+    "sandbox_id",
+    "plan_digest",
+    "participant",
+    "timeframe",
+    "sectors",
+    "activities",
+    "requirements",
+    "goals",
+    "completion",
+    "plan_gaps",
+    "evidence"
+  ],
+  "properties": {
+    "schema": {
+      "const": "https://historlabs.eu/written-proof/v0.1"
+    },
+    "legal_basis": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ai_act", "implementing_act", "template"],
+      "properties": {
+        "ai_act": {"type": "string"},
+        "implementing_act": {"type": "string"},
+        "template": {"type": "string"}
+      }
+    },
+    "status": {
+      "description": "What the document is and is not: evidence, not an EU declaration of conformity (Art. 47).",
+      "type": "string",
+      "minLength": 1
+    },
+    "sandbox_id": {"type": "string", "minLength": 1},
+    "plan_digest": {"$ref": "#/$defs/sha256_digest"},
+    "participant": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["provider", "system_name", "intended_purpose", "annex_iii_category"],
+      "properties": {
+        "provider": {"type": "string"},
+        "system_name": {"type": "string"},
+        "intended_purpose": {"type": "string"},
+        "annex_iii_category": {"type": "string"}
+      }
+    },
+    "timeframe": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["start", "end"],
+      "properties": {
+        "start": {"type": "string"},
+        "end": {"type": "string"}
+      }
+    },
+    "sectors": {
+      "description": "Art. 6(2)(a): the sector or sectors, from the plan.",
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "activities": {
+      "description": "Art. 6(2)(a): the types of activity. carried_out is null for an activity this system cannot observe (development, training, validation): the authority's assessment, not claimed.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["activity", "declared_in_plan", "carried_out", "evidence"],
+        "properties": {
+          "activity": {"type": "string"},
+          "declared_in_plan": {"type": "boolean"},
+          "carried_out": {"type": ["boolean", "null"]},
+          "evidence": {"type": "string"}
+        }
+      }
+    },
+    "requirements": {
+      "description": "Art. 6(2)(b): the requirements declared in scope, and each test's article with its outcome per attested run.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["declared_in_scope", "challenges_examined", "measured"],
+      "properties": {
+        "declared_in_scope": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["reference"],
+            "properties": {
+              "reference": {"type": "string", "minLength": 1},
+              "note": {"type": "string"}
+            }
+          }
+        },
+        "challenges_examined": {
+          "description": "The regulatory challenges the plan set out to examine (EUSAiR USF Annex XI 'Requirements'). Examined, not resolved: resolution is the authority's finding (Art. 6(3)(a)).",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["challenge"],
+            "properties": {
+              "challenge": {"type": "string", "minLength": 1},
+              "reference": {"type": "string", "minLength": 1}
+            }
+          }
+        },
+        "measured": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["test_id", "article", "runs"],
+            "properties": {
+              "test_id": {"type": "string"},
+              "article": {"type": ["string", "null"]},
+              "runs": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["run_number", "outcome"],
+                  "properties": {
+                    "run_number": {"type": "integer", "minimum": 1},
+                    "outcome": {"type": "string"}
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "goals": {
+      "description": "Art. 6(1): each goal against the last run of the tests the plan says evidence it.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "description", "evidenced_by", "status"],
+        "properties": {
+          "id": {"type": "string"},
+          "description": {"type": "string"},
+          "evidenced_by": {"type": "array", "items": {"type": "string"}},
+          "status": {
+            "enum": ["met", "not met", "not fully tested", "assessed by the authority"]
+          }
+        }
+      }
+    },
+    "completion": {
+      "description": "Art. 6(2)(c): completion is the gate allowing exit, with its ledger sequence number. Without one, only completed: false.",
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["completed"],
+          "properties": {"completed": {"const": false}}
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "completed",
+            "exited_at",
+            "exit_entry_seq",
+            "suspended_at_exit",
+            "keys_destroyed_entry_seq",
+            "exit_report_due_by"
+          ],
+          "properties": {
+            "completed": {"const": true},
+            "exited_at": {"type": "string"},
+            "exit_entry_seq": {"type": "integer", "minimum": 1},
+            "suspended_at_exit": {"type": "boolean"},
+            "keys_destroyed_entry_seq": {"type": ["integer", "null"], "minimum": 1},
+            "exit_report_due_by": {
+              "description": "Exit plus two calendar months, clamped to month end (Art. 6(4)).",
+              "type": "string"
+            }
+          }
+        }
+      ]
+    },
+    "plan_gaps": {
+      "description": "The Art. 5(2) elements the plan did not declare, so the proof cannot report on them.",
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ledger_head", "bundle_digest"],
+      "properties": {
+        "ledger_head": {"description": "Empty when not supplied.", "type": "string"},
+        "bundle_digest": {"description": "Empty when not supplied.", "type": "string"}
+      }
+    }
+  },
+  "$defs": {
+    "sha256_digest": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    }
+  }
+}

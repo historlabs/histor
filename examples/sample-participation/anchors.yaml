@@ -1,0 +1,12 @@
+# The trust anchors for this sample: what a regulator would hold from outside the
+# bundle, and pass with `histor verify --anchors`. Paths are relative to this file.
+# In a real participation, get each one from its owner, never from the operator:
+# the sandbox id from the admission decision, the plan digests from the plan
+# versions you signed, the signing keys from the sandbox's published key register.
+sandbox_id: demo-001
+plan_digest:
+  - sha256:d2f1d7f7ccbc2f2c5b6352d029acf8dec319c66daa9182be6e8de18c4b66ffb2
+  - sha256:7c29182e4070eda49c49c768f710fe55d509292558b1b93a28496b1a131f1354
+signing_keys:
+  control-plane: anchors/control-plane.pem
+  harness: anchors/harness.pem

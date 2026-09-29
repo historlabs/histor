@@ -1,0 +1,45 @@
+{
+  "attestation_count": 2,
+  "bundle_digest": "sha256:be16ec19a32850fbd0af771ed35b7715c26e3ed2fec234d66915986f32a02243",
+  "bundle_version": "0.3",
+  "entry_count": 27,
+  "files": {
+    "attestations.jsonl": "DSSE-signed in-toto statements, one per run",
+    "harness-statements.jsonl": "DSSE-signed statements of what the harness measured, signed in segment A, and for a run at a centre what the driver observed there; each attestation cites them by digest",
+    "ledger.jsonl": "every ledger entry, in order, with prev_hash and entry_hash",
+    "plan.json": "the sandbox plan these runs were judged against",
+    "plans/<digest>.json": "every signed plan version, keyed by its digest",
+    "policies/": "network and gate policy files, by name",
+    "public-keys.json": "key id -> PEM, for every key that signed anything here",
+    "runs/<n>/": "each run's logs, whose digests its attestation carries: relay-log.jsonl, model-stdout.log, drop-log.jsonl, job-record.txt, node-config.json"
+  },
+  "personal_data": {
+    "categories": {
+      "idp_id_tokens": {
+        "count": 1,
+        "description": "the raw OpenID Connect ID token behind each plan or report signature made through an identity provider, kept whole because the IdP's signature covers it; its claims name the signer and say when and how they logged in",
+        "files": [
+          "ledger.jsonl"
+        ]
+      },
+      "staff_identifiers": {
+        "count": 7,
+        "description": "email addresses and identity-provider subject ids of the people who act for the parties: in the plan's roles and processors, and in the ledger entries that record who committed, requested, decided or signed what",
+        "files": [
+          "ledger.jsonl",
+          "plan.json",
+          "plans/"
+        ]
+      }
+    },
+    "present": true,
+    "test_subject_data": false,
+    "test_subject_data_basis": "none, by construction of the export: no image, no ground-truth label or age, no group label of an item and no item id of any dataset. Results are aggregates by group; the model's decision log gives its output per request, keyed by a random request id that nothing in the bundle links to an item"
+  },
+  "plan_versions": [
+    "sha256:7c29182e4070eda49c49c768f710fe55d509292558b1b93a28496b1a131f1354",
+    "sha256:d2f1d7f7ccbc2f2c5b6352d029acf8dec319c66daa9182be6e8de18c4b66ffb2"
+  ],
+  "sandbox_id": "demo-001",
+  "verify_with": "uv run histor verify <this directory>"
+}

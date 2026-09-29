@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://historlabs.eu/spec/model-card.schema.json",
+  "title": "Sandbox model card v0.1 (sandbox-model-card/0.1)",
+  "description": "What the provider declares about the system under test (Annex IV, 2(b)), committed through the gate and written into the ledger. The required fields are histor/sandbox/modelcard.py REQUIRED; everything else is optional and open, because a card is a declaration the sandbox pins, not one it checks. For a hosted model the card is the pinned artefact: the plan's model_image_digest is the sha256 of its canonical JSON.",
+  "type": "object",
+  "required": ["schema", "model", "serving", "intended_use", "input", "output"],
+  "properties": {
+    "schema": {"const": "sandbox-model-card/0.1"},
+    "provider": {"type": "string"},
+    "system_name": {"type": "string"},
+    "model": {
+      "type": "object",
+      "required": ["id"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "publisher": {"type": "string"},
+        "family": {"type": "string"},
+        "parameters": {"type": "string"},
+        "architecture": {"type": "string"},
+        "licence": {
+          "description": "As declared by the provider. The licence report recorded at commit_model (by the engine's licence tool) is what the sandbox observed of an image; this is what was stated.",
+          "type": "string"
+        },
+        "licence_notes": {"type": "array", "items": {"type": "string"}},
+        "source": {"type": "string"}
+      }
+    },
+    "serving": {
+      "type": "object",
+      "required": ["kind"],
+      "properties": {
+        "kind": {"enum": ["image", "hosted_api"]},
+        "pinning": {"type": "string"}
+      }
+    },
+    "intended_use": {"type": "string"},
+    "input": {"type": "string"},
+    "output": {
+      "description": "Free text, or the response schema with its field names.",
+      "oneOf": [
+        {"type": "string"},
+        {
+          "type": "object",
+          "properties": {
+            "schema": {"type": "object"},
+            "fields": {"type": "array", "items": {"type": "string"}}
+          }
+        }
+      ]
+    },
+    "data_flow": {"type": "string"},
+    "limitations": {"type": "array", "items": {"type": "string"}}
+  }
+}

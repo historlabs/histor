@@ -1,0 +1,190 @@
+{
+  "activities": [
+    {
+      "activity": "testing",
+      "carried_out": true,
+      "declared_in_plan": true,
+      "evidence": "attested runs [1, 2]"
+    }
+  ],
+  "completion": {
+    "completed": true,
+    "exit_entry_seq": 23,
+    "exit_report_due_by": "2026-11-29T08:52:00.824000+00:00",
+    "exited_at": "2026-09-29T08:52:00.824Z",
+    "keys_destroyed_entry_seq": 24,
+    "suspended_at_exit": false
+  },
+  "evidence": {
+    "bundle_digest": "sha256:fff8a8b2304dd9a47414f67ee3674b2a7072588bce2f005aec82ac9d58e76c88",
+    "ledger_head": "sha256:89c4cf0a6b77cac0a6ec2ea14504b7db6d8c24d3b8ef017e36d7fcb0c9942ec4"
+  },
+  "goals": [
+    {
+      "description": "Show that the system refuses minors at a rate the authority accepts, in every skin-tone band and sex, on data the provider has never seen.",
+      "evidenced_by": [
+        "minors_accepted_by_group",
+        "accuracy_by_group"
+      ],
+      "id": "minors_not_served",
+      "status": "met"
+    },
+    {
+      "description": "Show that blur, low light, compression and the other plan perturbations do not raise the false-adult rate beyond the plan's limit, and that the same image gets the same decision.",
+      "evidenced_by": [
+        "robustness",
+        "determinism"
+      ],
+      "id": "stable_under_field_conditions",
+      "status": "not fully tested"
+    },
+    {
+      "description": "Show that a customer who can only show the camera an image and read the answer cannot, within the plan's query budget, turn a refused minor into a sale, and that a covered lens, an empty aisle, a printed card or a frame the system was not built for is refused rather than approved. This is not a penetration test of the provider's system; that stays with the provider.",
+      "evidenced_by": [
+        "adversarial_robustness",
+        "fail_safe"
+      ],
+      "id": "resists_manipulation_and_fails_closed",
+      "status": "not fully tested"
+    },
+    {
+      "description": "Show that every decision is logged with the fields Art. 12 needs.",
+      "evidenced_by": [
+        "decision_logging"
+      ],
+      "id": "decisions_are_logged",
+      "status": "met"
+    },
+    {
+      "description": "Discuss with the authority how staff override a refusal at the point of sale. Assessed by the authority; no automated test measures it.",
+      "evidenced_by": [],
+      "id": "human_oversight_design",
+      "status": "assessed by the authority"
+    }
+  ],
+  "legal_basis": {
+    "ai_act": "Art. 57(7)",
+    "implementing_act": "draft of December 2025, Art. 6(2) (not adopted)",
+    "template": "EUSAiR USF Annex XVI (slide summary only)"
+  },
+  "participant": {
+    "annex_iii_category": "1(b)",
+    "intended_purpose": "Estimate whether a customer is 18 or over at unattended points of sale for age-restricted products, so that the machine either completes or refuses the sale. The harm the plan is written around is a minor being served; accuracy is judged against this purpose and nothing else.",
+    "provider": "Demo Provider",
+    "system_name": "Point-of-sale age estimator"
+  },
+  "plan_digest": "sha256:7c29182e4070eda49c49c768f710fe55d509292558b1b93a28496b1a131f1354",
+  "plan_gaps": [],
+  "requirements": {
+    "challenges_examined": [
+      {
+        "challenge": "Whether bias detection justifies processing skin-tone labels when synthetic faces cannot show the disparity.",
+        "reference": "AI Act Art. 4 bis"
+      },
+      {
+        "challenge": "What human oversight means at an unattended point of sale.",
+        "reference": "AI Act Art. 14"
+      }
+    ],
+    "declared_in_scope": [
+      {
+        "note": "Data governance for the held-out and stress sets",
+        "reference": "AI Act Art. 10"
+      },
+      {
+        "note": "Automatic logging of decisions",
+        "reference": "AI Act Art. 12"
+      },
+      {
+        "note": "Human oversight at the point of sale; guidance only",
+        "reference": "AI Act Art. 14"
+      },
+      {
+        "note": "Accuracy and robustness",
+        "reference": "AI Act Art. 15"
+      },
+      {
+        "note": "Special-category data for bias detection",
+        "reference": "AI Act Art. 4 bis"
+      },
+      {
+        "note": "Face images and group labels",
+        "reference": "GDPR Art. 9"
+      }
+    ],
+    "measured": [
+      {
+        "article": "15",
+        "runs": [
+          {
+            "outcome": "fail",
+            "run_number": 1
+          },
+          {
+            "outcome": "pass",
+            "run_number": 2
+          }
+        ],
+        "test_id": "accuracy_by_group"
+      },
+      {
+        "article": "10, 15",
+        "runs": [
+          {
+            "outcome": "fail",
+            "run_number": 1
+          },
+          {
+            "outcome": "pass",
+            "run_number": 2
+          }
+        ],
+        "test_id": "minors_accepted_by_group"
+      },
+      {
+        "article": "15",
+        "runs": [],
+        "test_id": "robustness"
+      },
+      {
+        "article": "15",
+        "runs": [],
+        "test_id": "adversarial_robustness"
+      },
+      {
+        "article": "15",
+        "runs": [],
+        "test_id": "fail_safe"
+      },
+      {
+        "article": "15",
+        "runs": [],
+        "test_id": "determinism"
+      },
+      {
+        "article": "12, 19",
+        "runs": [
+          {
+            "outcome": "pass",
+            "run_number": 1
+          },
+          {
+            "outcome": "pass",
+            "run_number": 2
+          }
+        ],
+        "test_id": "decision_logging"
+      }
+    ]
+  },
+  "sandbox_id": "demo-001",
+  "schema": "https://historlabs.eu/written-proof/v0.1",
+  "sectors": [
+    "Retail: unattended sale of age-restricted products"
+  ],
+  "status": "Documentation evidence for notified bodies and market surveillance authorities (draft implementing act Art. 6(2)). It does not have the status or legal effect of an EU declaration of conformity under AI Act Art. 47, and exiting a sandbox grants no presumption of conformity.",
+  "timeframe": {
+    "end": "2030-01-01T00:00:00Z",
+    "start": "2020-01-01T00:00:00Z"
+  }
+}

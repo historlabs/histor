@@ -1,0 +1,631 @@
+{
+  "registry_version": "4",
+  "bundle_version": "0.3",
+  "spec": "spec/evidence-bundle.md",
+  "outcomes": [
+    "pass",
+    "fail",
+    "warn"
+  ],
+  "anchored": "any external anchor was given (plan_digest, sandbox_id, tsa_root, idp_keys, policy_digest, harness_digest, signing_keys, audience, ledger_head, checkpoints, centre_keys, vendor_roots)",
+  "checks": [
+    {
+      "id": "bundle_files",
+      "order": 1,
+      "meaning": "Every path in the bundle is a regular file or a directory.",
+      "fails_when": "a path is a symbolic link, FIFO, socket or device; nothing else is read and no other check runs",
+      "warns_when": "never",
+      "anchors": "no effect",
+      "notes": "Emitted only when it fails.",
+      "enforces": [
+        "B-12"
+      ]
+    },
+    {
+      "id": "bundle_version",
+      "order": 2,
+      "meaning": "The manifest states a bundle_version this verifier reads.",
+      "fails_when": "the manifest is unreadable or not an object, or the version is unknown; no other check runs and the CLI exits 2",
+      "warns_when": "the version is legacy (0.1, 0.2)",
+      "anchors": "no effect",
+      "notes": "",
+      "enforces": [
+        "B-3",
+        "B-4",
+        "B-5",
+        "B-19"
+      ]
+    },
+    {
+      "id": "bundle_format",
+      "order": 3,
+      "meaning": "The manifest's bundle_version is the one the ledger was written for.",
+      "fails_when": "report_generated records another version; a legacy version with a signing_key_registered entry or a report_generated recording a version; with TSA roots, a legacy version whose ledger was stamped after that version was superseded; a current version whose last report_generated records no bundle_version",
+      "warns_when": "never",
+      "anchors": "TSA roots enable the superseded-date rule",
+      "notes": "",
+      "enforces": [
+        "B-21",
+        "B-22",
+        "B-141",
+        "B-146"
+      ]
+    },
+    {
+      "id": "signing_keys",
+      "order": 4,
+      "meaning": "Each statement signer's keys come from an anchor or the ledger, and every copy of a key agrees.",
+      "fails_when": "a recorded key is not Ed25519; two different keys under one key id; a copy differs from the chosen key; a signer in use has no key; the control-plane key was recorded after the first attestation",
+      "warns_when": "a signer in use has a key from public-keys.json alone (KEYS NOT ANCHORED)",
+      "anchors": "fail instead of warn when any anchor is given; signing_keys anchors take precedence over the ledger",
+      "notes": "",
+      "enforces": [
+        "B-34",
+        "B-35",
+        "B-36",
+        "B-90",
+        "B-91",
+        "B-92",
+        "B-93",
+        "B-147"
+      ]
+    },
+    {
+      "id": "signatures",
+      "order": 5,
+      "meaning": "Each attestation is the envelope its run_attestation entry recorded, and verifies under the control plane's key.",
+      "fails_when": "attestations unreadable or absent; count differs from the ledger's run_attestation entries; an envelope differs by canonical digest; it does not verify under a control-plane key; its run number differs",
+      "warns_when": "never",
+      "anchors": "control-plane anchors are the only keys used when given",
+      "notes": "When it fails, every later check is skipped.",
+      "enforces": [
+        "B-14",
+        "B-16",
+        "B-41",
+        "B-84",
+        "B-86",
+        "B-87",
+        "B-88",
+        "B-90",
+        "B-94",
+        "B-95"
+      ]
+    },
+    {
+      "id": "statement_types",
+      "order": 6,
+      "meaning": "Every signed statement is of a type this verifier knows.",
+      "fails_when": "an attestation or harness statement has an unknown predicateType; harness-statements.jsonl is unreadable",
+      "warns_when": "a statement uses the legacy namespace https://sandbox-mvp.dev/",
+      "anchors": "no effect",
+      "notes": "",
+      "enforces": [
+        "B-6",
+        "B-7",
+        "B-8",
+        "B-16"
+      ]
+    },
+    {
+      "id": "hash_chain",
+      "order": 7,
+      "meaning": "The ledger chain is intact: seq, prev_hash and entry_hash.",
+      "fails_when": "the ledger, plan or public-keys.json is unreadable or malformed (later checks are skipped); the ledger is empty; seq, prev_hash or entry_hash is wrong",
+      "warns_when": "never",
+      "anchors": "no effect",
+      "notes": "Also emitted early, as a failure, when the ledger cannot be read.",
+      "enforces": [
+        "B-14",
+        "B-16",
+        "B-17",
+        "B-26",
+        "B-27",
+        "B-28",
+        "B-29",
+        "B-30"
+      ]
+    },
+    {
+      "id": "run_numbers",
+      "order": 8,
+      "meaning": "Every run was started once, numbered without gaps, and ended in the ledger.",
+      "fails_when": "no runs attested; a run started twice; numbers not contiguous from 1; attested twice or without a start; a run started and not ended (other than the last before exit); the ledger's attested runs differ from the bundle's",
+      "warns_when": "the last run has not ended and the participation has not exited",
+      "anchors": "no effect",
+      "notes": "",
+      "enforces": [
+        "B-37",
+        "B-38",
+        "B-39",
+        "B-40",
+        "B-41"
+      ]
+    },
+    {
+      "id": "plan_versions",
+      "order": 9,
+      "meaning": "Every plan version the ledger records as signed is carried, hashes to its name, and plan.json is the one in force.",
+      "fails_when": "a plan file does not hash to its name; no plan_signed entry; a signed version is missing; plan.json is not the version last put in force; plan.json is unreadable (the other checks still run)",
+      "warns_when": "never",
+      "anchors": "no effect",
+      "notes": "",
+      "enforces": [
+        "B-14",
+        "B-33",
+        "B-58",
+        "B-59",
+        "B-60"
+      ]
+    },
+    {
+      "id": "plan_signatures",
+      "order": 10,
+      "meaning": "Every plan version put in force was signed by the people the plan names for each party.",
+      "fails_when": "an IdP token does not verify, bind the digest, match the record, or is stale; the signer is not named in the plan's roles for the party; one principal signed for both parties; an amendment lacks the IdP signatures the original had (or method idp, or IdP keys given); recorded key signatures do not verify; a run cites a plan not in force before it started; with an audience anchor, aud or azp does not match; with a plan member naming an audience, aud or azp does not match it; under any anchor, a signer named by email only without a pinned issuer and a verified email",
+      "warns_when": "no IdP signatures at all (signed with sandbox keys); development IdP; a party matched by email alone",
+      "anchors": "--idp-keys makes IdP signatures required; --expect-audience enables the aud check; any anchor turns an unpinned or unverified email-only signer into a failure",
+      "notes": "",
+      "enforces": [
+        "B-63",
+        "B-64",
+        "B-65",
+        "B-66",
+        "B-67",
+        "B-68",
+        "B-70",
+        "B-71",
+        "B-72",
+        "B-73",
+        "B-74",
+        "B-75",
+        "B-76",
+        "B-77",
+        "B-78",
+        "B-81",
+        "B-82",
+        "B-163",
+        "B-164"
+      ]
+    },
+    {
+      "id": "report_signature",
+      "order": 11,
+      "meaning": "The last exit report was signed by the regulator the plan in force names.",
+      "fails_when": "a report signature with no report; a token that does not verify or is stale; signed by another party; signer not in roles.regulator; with an audience anchor, aud or azp does not match; its ledger_head is not in the ledger, not before the signature, or before the report it signs; the nonce does not commit to the head it records; under any anchor, an unpinned or unverified email-only signer",
+      "warns_when": "no report; the last report is unsigned (a draft); development IdP; email-only match; a signature that commits to no ledger head",
+      "anchors": "--expect-audience enables the aud check; a missing signature fails completeness, not this check; any anchor turns an unpinned or unverified email-only signer into a failure",
+      "notes": "",
+      "enforces": [
+        "B-70",
+        "B-71",
+        "B-72",
+        "B-73",
+        "B-74",
+        "B-75",
+        "B-77",
+        "B-79",
+        "B-80",
+        "B-81",
+        "B-82",
+        "B-148",
+        "B-149",
+        "B-150",
+        "B-151",
+        "B-163",
+        "B-164"
+      ]
+    },
+    {
+      "id": "artifact_digests",
+      "order": 12,
+      "meaning": "Each run's model, harness and relay images match the pins of the plan version it cites.",
+      "fails_when": "the cited plan is not carried; a subject is missing or differs from the pin",
+      "warns_when": "never",
+      "anchors": "no effect",
+      "notes": "",
+      "enforces": [
+        "B-62",
+        "B-69"
+      ]
+    },
+    {
+      "id": "dataset_commitments",
+      "order": 13,
+      "meaning": "Every dataset a run used was committed, at that digest, before the run started, at the commitment the plan it cites pins.",
+      "fails_when": "not committed; committed at another digest; committed after the run's first run_started; the plan the run cites lists datasets and does not admit this one, or pins another commitment",
+      "warns_when": "never",
+      "anchors": "no effect",
+      "notes": "",
+      "enforces": [
+        "B-115",
+        "B-116",
+        "B-117",
+        "B-119",
+        "B-165"
+      ]
+    },
+    {
+      "id": "isolation",
+      "order": 14,
+      "meaning": "Isolation evidence is present and matches the plan and the backend.",
+      "fails_when": "unknown backend or arm; backend and arm disagree; cilium policy digest differs or no drop log; hpc_centre signature, key, conversion, key release, weights release or undertaking problems; with --centre-keys, centre evidence not signed under a key given for that centre, or the bundle recording another key for it; an HPC key recorded after what it signs; under any anchor, a centre key only the bundle names or an operator key only in public-keys.json",
+      "warns_when": "any local_process run; any sound hpc_centre run (never passes); a refused key release (incident); a centre key only the bundle names, without anchors",
+      "anchors": "--centre-keys are the only keys centre evidence verifies under; any anchor turns a bundle-only HPC key into a failure",
+      "notes": "",
+      "enforces": [
+        "B-120",
+        "B-121",
+        "B-122",
+        "B-123",
+        "B-124",
+        "B-125",
+        "B-126",
+        "B-127",
+        "B-128",
+        "B-129",
+        "B-130",
+        "B-131",
+        "B-132",
+        "B-157",
+        "B-158",
+        "B-159"
+      ]
+    },
+    {
+      "id": "tee_attestation",
+      "order": 15,
+      "meaning": "Each run's keys were released to a trusted execution environment whose hardware attestation report meets the plan's tee_policy and binds the key they were sealed to.",
+      "fails_when": "the plan a run cites pins a tee_policy and its key_released records no TEE evidence (a run refused its keys that ended halted is exempt); the evidence is malformed, its report or collateral does not hash to its digest, or its typed fields differ from the report; the chain does not verify to a root the policy lists for the platform, or with --vendor-roots to one given; a mock root under sev-snp or tdx; at the time the entry's timestamp signs, a certificate not valid, a required revocation list missing or not current, a chain certificate revoked, or the TCB information not current; the report's signature does not verify; the platform, measurement or init_data_digest is not the policy's, the TCB is below min_tcb, or debug is on; report_data does not bind the key the ledger says the keys were sealed to, for this run of the plan it cites; the run's isolation_evidence.tee or the provider's receipt names another report, or a run names a report no key_released records",
+      "warns_when": "platform mock, always (MOCK PLATFORM: NOT HARDWARE EVIDENCE); sev-snp or tdx while this implementation has been tested on synthetic structures only (UNVERIFIED IMPLEMENTATION); evidence under a plan with no tee_policy",
+      "anchors": "--vendor-roots: the chain must also end at a root given",
+      "notes": "Emitted only when a plan pins a tee_policy or the bundle holds TEE evidence.",
+      "enforces": [
+        "B-173",
+        "B-174",
+        "B-175",
+        "B-176",
+        "B-177",
+        "B-178",
+        "B-179",
+        "B-180",
+        "B-181"
+      ]
+    },
+    {
+      "id": "run_logs",
+      "order": 16,
+      "meaning": "Carried run logs hash to the digests their attestations carry.",
+      "fails_when": "a log does not match its digest",
+      "warns_when": "a log whose digest is claimed is not carried",
+      "anchors": "no effect",
+      "notes": "",
+      "enforces": [
+        "B-133",
+        "B-134"
+      ]
+    },
+    {
+      "id": "harness_statements",
+      "order": 17,
+      "meaning": "Each harness statement is ledger-recorded, signed by the harness (or scorer), and agrees with its attestation.",
+      "fails_when": "a statement not recorded in the ledger; a cited statement missing; wrong key; fields or results differ; halted harness vs attestation; log coverage mismatch; driver/scorer disagreement",
+      "warns_when": "a run cites no harness statement",
+      "anchors": "fail instead of warn when any anchor is given",
+      "notes": "",
+      "enforces": [
+        "B-89",
+        "B-90",
+        "B-96",
+        "B-97",
+        "B-98",
+        "B-99",
+        "B-100",
+        "B-101",
+        "B-102",
+        "B-103",
+        "B-104",
+        "B-105"
+      ]
+    },
+    {
+      "id": "thresholds",
+      "order": 18,
+      "meaning": "Every stated outcome follows from the numbers reported with it.",
+      "fails_when": "held does not follow; outcome inconsistent; pass with a failing test; recomputed observed values or Wilson intervals disagree",
+      "warns_when": "never",
+      "anchors": "no effect",
+      "notes": "",
+      "enforces": [
+        "B-109",
+        "B-110",
+        "B-111",
+        "B-112"
+      ]
+    },
+    {
+      "id": "sample_sizes",
+      "order": 19,
+      "meaning": "Whether any group was too small to be scored.",
+      "fails_when": "never",
+      "warns_when": "any insufficient_sample group",
+      "anchors": "no effect",
+      "notes": "",
+      "enforces": [
+        "B-113"
+      ]
+    },
+    {
+      "id": "deletion",
+      "order": 20,
+      "meaning": "Keys were destroyed after an exit the gate allowed.",
+      "fails_when": "keys destroyed with no allowed exit; allowed exit without destruction; destruction before exit (a refused exit is not an exit)",
+      "warns_when": "no exit yet",
+      "anchors": "no effect",
+      "notes": "",
+      "enforces": [
+        "B-43",
+        "B-44"
+      ]
+    },
+    {
+      "id": "completeness",
+      "order": 21,
+      "meaning": "The ledger ends as an ended participation does, and no file changed after the report.",
+      "fails_when": "the last report's bundle_digest is not D(k) (always); a missing exit, destruction, report or regulator signature, when any anchor is given and not --in-progress",
+      "warns_when": "a missing ending without anchors, or with --in-progress",
+      "anchors": "fail instead of warn when any anchor is given",
+      "notes": "",
+      "enforces": [
+        "B-23",
+        "B-24",
+        "B-42",
+        "B-45"
+      ]
+    },
+    {
+      "id": "timestamps",
+      "order": 22,
+      "meaning": "Every entry is stamped over its hash by a token that verifies, at the time it states, in chain order, near recorded_at.",
+      "fails_when": "no entry or not every entry stamped; digest differs from entry_hash; token does not verify or chain; stated time is not the signed time; more than 10 minutes from recorded_at; more than 5 seconds backwards; a development token's signed digest is not the entry's hash",
+      "warns_when": "development tokens only, or a mix of kinds",
+      "anchors": "no effect (anchor_tsa_root is separate)",
+      "notes": "",
+      "enforces": [
+        "B-32",
+        "B-46",
+        "B-47",
+        "B-48",
+        "B-49",
+        "B-50",
+        "B-51",
+        "B-52",
+        "B-53",
+        "B-54",
+        "B-55",
+        "B-56",
+        "B-57"
+      ]
+    },
+    {
+      "id": "tsa_revocation",
+      "order": 23,
+      "meaning": "The timestamp authority's certificate had not been revoked when it stamped, from the CA's answer kept beside each RFC 3161 token.",
+      "fails_when": "revocation evidence present is not an OCSP response or CRL signed by the signer certificate's issuer (or a delegated responder), is about another certificate, is not current at genTime, or shows the certificate revoked by then",
+      "warns_when": "an RFC 3161 token carries no revocation evidence; the ledger holds no RFC 3161 token (development timestamps only)",
+      "anchors": "with --tsa-root, the chain the evidence is checked against ends at the given roots",
+      "notes": "",
+      "enforces": [
+        "B-160",
+        "B-161",
+        "B-162"
+      ]
+    },
+    {
+      "id": "personal_data",
+      "order": 24,
+      "meaning": "The manifest says what personal data the bundle holds.",
+      "fails_when": "0.2 or later: personal_data differs from the derived object",
+      "warns_when": "0.1: contains_personal_data is not true while personal data is present",
+      "anchors": "no effect",
+      "notes": "",
+      "enforces": [
+        "B-19",
+        "B-135",
+        "B-137"
+      ]
+    },
+    {
+      "id": "i18n_catalogues",
+      "order": 25,
+      "meaning": "Each catalogue a translated rendering of the report was made with is in the bundle, as the ledger records it.",
+      "fails_when": "a recorded catalogue is missing from i18n/<lang>/report.mo or hashes otherwise; a translated rendering records no catalogue_sha256; English or en-XA records one; two catalogues for one language; a catalogue no rendering records",
+      "warns_when": "never",
+      "anchors": "no effect",
+      "notes": "Passes with nothing to check for a report in English only.",
+      "enforces": [
+        "B-166",
+        "B-167",
+        "B-168",
+        "B-169"
+      ]
+    },
+    {
+      "id": "report_renderings",
+      "order": 26,
+      "meaning": "The exit report is rendered in every language the plan names, the authentic one being the report the ledger committed to, each rendering named by hash in it.",
+      "fails_when": "the plan names languages and the report entry records no renderings, or other languages; a language lacks a document; no single authentic pair; the authentic report or written proof is not the one the entry records; given the files, one hashes otherwise or the authentic report does not name another by hash",
+      "warns_when": "the renderings are recorded but their files were not available (--report-dir, or the bundle's parent directory)",
+      "anchors": "no effect",
+      "notes": "Emitted only when the ledger records a report. Implemented in histor/verifier/renderings.py.",
+      "enforces": [
+        "B-170",
+        "B-171",
+        "B-172"
+      ]
+    },
+    {
+      "id": "nb_tests",
+      "order": 27,
+      "meaning": "Every run the notified body initiated was authorised as the plan it ran under says: its proposal, then the approvals or the amendment, then the run.",
+      "fails_when": "the run_started entry and the attestation disagree on initiated_by or authorisation; the run or its proposal does not follow the gate decision that allowed it; the proposal is missing, later than the run, unjustified, declined before the run, or its digest does not recompute; the run tests anything but the proposed test; pre-authorised: the plan it cites does not allow notified-body tests or admit the test, or an approver it names did not approve between proposal and run, or an approval's IdP token does not verify, bind the proposal's digest or name the person the plan names; by amendment: the plan it cites does not adopt the proposal unchanged, or was not put in force between proposal and run; more notified-body runs than notified_body_tests.max_runs; a run not marked as the notified body's reports a proposed test its plan does not list",
+      "warns_when": "an approval was made through the development IdP, or matches the plan's party by email only",
+      "anchors": "any anchor turns an unpinned or unverified email-only approver into a failure, as for plan_signatures",
+      "notes": "Emitted only when the ledger records a notified-body proposal, approval or decline, or a run or attestation carries initiated_by. Implemented in histor/verifier/nb_tests.py.",
+      "enforces": [
+        "B-183",
+        "B-184",
+        "B-185",
+        "B-186",
+        "B-187",
+        "B-188",
+        "B-189",
+        "B-190"
+      ]
+    },
+    {
+      "id": "anchor_checkpoints",
+      "order": 28,
+      "meaning": "The ledger extends every head checkpoint you were given.",
+      "fails_when": "a checkpoint's control-plane signature or timestamp does not verify, or its timestamp is over something else or at another time; it names another sandbox; the ledger holds no entry at its seq with its head_hash; that entry was recorded after the checkpoint was made",
+      "warns_when": "a checkpoint carries a development timestamp",
+      "anchors": "emitted only with --checkpoint; stands in for ledger_head in the anchors check",
+      "notes": "",
+      "enforces": [
+        "B-153",
+        "B-154",
+        "B-155",
+        "B-156"
+      ]
+    },
+    {
+      "id": "anchor_plan_digest",
+      "order": 29,
+      "meaning": "Every plan the bundle names is one whose digest you gave.",
+      "fails_when": "a plan file does not hash to its name; a plan version, signing or run names another digest; no plan",
+      "warns_when": "never",
+      "anchors": "emitted only with --expect-plan-digest",
+      "notes": "",
+      "enforces": [
+        "B-59",
+        "B-106"
+      ]
+    },
+    {
+      "id": "anchor_sandbox_id",
+      "order": 30,
+      "meaning": "The manifest, ledger, plans and runs name the sandbox id you gave.",
+      "fails_when": "any of them names another",
+      "warns_when": "never",
+      "anchors": "emitted only with --expect-sandbox-id",
+      "notes": "",
+      "enforces": [
+        "B-25"
+      ]
+    },
+    {
+      "id": "anchor_tsa_root",
+      "order": 31,
+      "meaning": "Every timestamp chains to a TSA root you gave.",
+      "fails_when": "no entry stamped; a dev token; a token that does not chain to the given roots",
+      "warns_when": "never",
+      "anchors": "emitted only with --tsa-root",
+      "notes": "",
+      "enforces": [
+        "B-49",
+        "B-53",
+        "B-54",
+        "B-140"
+      ]
+    },
+    {
+      "id": "anchor_idp_keys",
+      "order": 32,
+      "meaning": "Every plan and report signature was made with a key in the JWKS you gave.",
+      "fails_when": "no IdP signature at all; a signature's JWK thumbprint is not in the set",
+      "warns_when": "never",
+      "anchors": "emitted only with --idp-keys",
+      "notes": "",
+      "enforces": [
+        "B-83"
+      ]
+    },
+    {
+      "id": "anchor_policy_digest",
+      "order": 33,
+      "meaning": "Every plan version and run records the network policy digest you gave.",
+      "fails_when": "a plan or run records another; no plan",
+      "warns_when": "never",
+      "anchors": "emitted only with --expect-policy-digest",
+      "notes": "",
+      "enforces": [
+        "B-107"
+      ]
+    },
+    {
+      "id": "anchor_harness_digest",
+      "order": 34,
+      "meaning": "Every plan version and run records the harness image digest you gave.",
+      "fails_when": "a plan or run records another; no plan",
+      "warns_when": "never",
+      "anchors": "emitted only with --expect-harness-digest",
+      "notes": "",
+      "enforces": [
+        "B-108"
+      ]
+    },
+    {
+      "id": "anchor_ledger_head",
+      "order": 35,
+      "meaning": "The ledger holds the head you hold.",
+      "fails_when": "the ledger ends before the head's seq (entries were cut from its end), or its entry there hashes otherwise (it was rewritten from that point)",
+      "warns_when": "never",
+      "anchors": "emitted only with --expect-head",
+      "notes": "",
+      "enforces": [
+        "B-152"
+      ]
+    },
+    {
+      "id": "anchors",
+      "order": 36,
+      "meaning": "Which anchors were given from outside the bundle.",
+      "fails_when": "never (a malformed-input failure only)",
+      "warns_when": "any anchor came from the bundle (ledger_head and checkpoints count as one; centre_keys only when a centre signed evidence; vendor_roots only when there is TEE evidence or a tee_policy)",
+      "anchors": "passes when all are given",
+      "notes": "",
+      "enforces": [
+        "B-139"
+      ]
+    },
+    {
+      "id": "bundle_digest",
+      "order": 37,
+      "meaning": "No file changed after the manifest was written.",
+      "fails_when": "manifest.bundle_digest is not D",
+      "warns_when": "never",
+      "anchors": "no effect",
+      "notes": "Emitted last.",
+      "enforces": [
+        "B-19",
+        "B-20"
+      ]
+    },
+    {
+      "id": "malformed",
+      "order": 38,
+      "meaning": "The CLI's last resort: the bundle could not be read at all.",
+      "fails_when": "verify_bundle raised; this is then the only result",
+      "warns_when": "never",
+      "anchors": "no effect",
+      "notes": "Emitted by the CLI, not by verify_bundle. Every check reads what it needs inside itself, so the reference implementation reaches it only for input none of them foresaw.",
+      "enforces": [
+        "B-144"
+      ]
+    }
+  ],
+  "exit_codes": {
+    "0": "verified: no check failed",
+    "1": "at least one check failed",
+    "2": "no verdict: not a bundle, unknown bundle_version or unreadable manifest, an anchor that cannot be read, or an invalid command line"
+  }
+}

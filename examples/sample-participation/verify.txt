@@ -1,0 +1,113 @@
+  ok    bundle_version: is this a bundle format this verifier knows how to check?
+        bundle_version 0.3
+  ok    bundle_format: is the bundle's format the one its ledger was written for?
+        bundle_version 0.3, as the ledger's report_generated (seq 25) records
+  ok    signing_keys: was every statement checked under a key the ledger recorded or you gave, not one read from public-keys.json alone?
+        control-plane (ledger seq 2), harness (ledger seq 3)
+  ok    signatures: is every attestation the one the ledger recorded, signed by the control plane?
+        2 attestation(s), each the one the ledger recorded for its run, verify
+        under the control plane's key
+  ok    statement_types: is every signed statement of a type this verifier knows?
+        4 statement(s), each of a known type under https://historlabs.eu/
+  ok    hash_chain: is the ledger hash chain intact, with no gaps?
+        27 entries, chain intact
+  ok    run_numbers: was every run started once, and ended in the ledger, with no unrecorded runs?
+        runs [1, 2], contiguous, each started once and ended in the ledger
+  ok    plan_versions: is every plan version the ledger records present in the bundle?
+        2 version(s) — the plan was amended during the participation
+  warn  plan_signatures: was the plan signed by each party, through their own identity provider?
+        the plan was signed with keys the sandbox holds, not through the
+        parties' identity providers: the bundle shows that the sandbox signed
+        it, not who agreed to it
+  warn  report_signature: was the exit report signed by the regulator, through their own identity provider?
+        report sha256:eb92d315df53… is signed through the development IdP, which
+        issues a token for anyone: the signature identifies nobody
+  ok    artifact_digests: do the artifacts in every run match the pins of the plan it cites?
+        2 run(s) match the plan's pins
+  ok    dataset_commitments: was every dataset used committed before the run that used it?
+        1 committed
+  warn  isolation: is isolation evidence present and does it match the plan's policy?
+        NO ISOLATION WAS ENFORCED. Every run in this bundle was executed as
+        ordinary processes on one host. The results describe what the model
+        answered; they establish nothing about whether it could have reached the
+        data or the network. This bundle is a development artefact and is not
+        sandbox evidence.
+  ok    run_logs: do the run logs in the bundle match the digests their attestations carry?
+        4 logs match their digests
+  ok    harness_statements: did the harness sign what it measured, and does the attestation agree?
+        2 run(s): the harness signed its measurements and the attestation agrees
+  ok    thresholds: does every stated outcome follow from the numbers reported with it?
+        recomputed and consistent
+  warn  sample_sizes: were any thresholds passed on samples too small to mean anything?
+        2 group(s) fell below the plan's minimum and were not scored: run 1
+        accuracy_by_group mae age_band=18_24 (n=9), run 2 accuracy_by_group mae
+        age_band=18_24 (n=9)
+  ok    deletion: were keys destroyed after exit?
+        keys destroyed after exit: ['data/demo-001/lab-heldout-v1']
+  ok    completeness: does the ledger end as a participation that has ended does?
+        exit, keys destroyed, the report and the regulator's signature over it,
+        and the report's bundle digest matches this bundle up to seq 24
+  warn  timestamps: are the timestamps valid, ordered, and external?
+        every timestamp was issued by the sandbox operator's own development
+        authority, not by a third party. The ordering is self-consistent and
+        anchors nothing: an operator able to rebuild this ledger could reissue
+        these timestamps with it.
+  warn  tsa_revocation: was the timestamp authority's certificate unrevoked when it stamped?
+        no RFC 3161 timestamp in this ledger, so no authority certificate whose
+        revocation could be checked: development timestamps carry none
+  ok    personal_data: does the manifest say what personal data the bundle holds?
+        as the manifest says, the bundle holds personal data: staff identifiers
+        (7, in ledger.jsonl, plan.json, plans/); idp id tokens (1, in
+        ledger.jsonl), and no test-subject data (none of the files the export
+        writes can carry it)
+  ok    i18n_catalogues: is the catalogue each translated rendering of the report was made with in the bundle, as the ledger records it?
+        the report was rendered in English only: no catalogue to carry
+  ok    report_renderings: is the exit report rendered in every language the plan names, each rendering named by hash in the authentic report?
+        the plan names no languages: one report, in English
+  warn  anchors: were the trust anchors given from outside the bundle?
+        the plan digest, the sandbox id, the timestamp authority's root, the
+        identity providers' keys, the network policy digest, the harness image
+        digest, the statement signing keys, the audience the parties' IdP logins
+        were for, the ledger head came from the bundle itself: the checks
+        against them show that the bundle agrees with itself, not that it is the
+        one you signed. An operator who rebuilt it could have replaced them all
+        consistently. Pass them from outside, with --anchors or the --expect-*
+        options.
+  ok    bundle_digest: does the bundle match the digest in its own manifest?
+        sha256:86b3110fde8f24e9de897c200c96b8f60edb6b190e08fc5c7ea1e610a4a65a45
+
+VERIFIED — 19 checks passed, 7 warning(s)
+
+Anchors given from outside: none
+Anchors read from the bundle: plan_digest, sandbox_id, tsa_root, idp_keys, policy_digest, harness_digest, signing_keys, audience, ledger_head
+
+What this bundle does NOT establish:
+  - plan_signatures: the plan was signed with keys the sandbox holds, not
+    through the parties' identity providers: the bundle shows that the
+    sandbox signed it, not who agreed to it
+  - report_signature: report sha256:eb92d315df53… is signed through the
+    development IdP, which issues a token for anyone: the signature
+    identifies nobody
+  - isolation: NO ISOLATION WAS ENFORCED. Every run in this bundle was
+    executed as ordinary processes on one host. The results describe what
+    the model answered; they establish nothing about whether it could have
+    reached the data or the network. This bundle is a development artefact
+    and is not sandbox evidence.
+  - sample_sizes: 2 group(s) fell below the plan's minimum and were not
+    scored: run 1 accuracy_by_group mae age_band=18_24 (n=9), run 2
+    accuracy_by_group mae age_band=18_24 (n=9)
+  - timestamps: every timestamp was issued by the sandbox operator's own
+    development authority, not by a third party. The ordering is
+    self-consistent and anchors nothing: an operator able to rebuild this
+    ledger could reissue these timestamps with it.
+  - tsa_revocation: no RFC 3161 timestamp in this ledger, so no authority
+    certificate whose revocation could be checked: development timestamps
+    carry none
+  - anchors: the plan digest, the sandbox id, the timestamp authority's
+    root, the identity providers' keys, the network policy digest, the
+    harness image digest, the statement signing keys, the audience the
+    parties' IdP logins were for, the ledger head came from the bundle
+    itself: the checks against them show that the bundle agrees with itself,
+    not that it is the one you signed. An operator who rebuilt it could have
+    replaced them all consistently. Pass them from outside, with --anchors
+    or the --expect-* options.

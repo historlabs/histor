@@ -1,0 +1,82 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# Every action is pinned by commit, with its version beside it.
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          enable-cache: false
+
+      - name: ruff
+        run: |
+          uvx ruff@0.16.8 check .
+          uvx ruff@0.16.8 format --check .
+
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          enable-cache: false
+
+      - name: Install the package as a user would
+        run: |
+          uv venv --python "${{ matrix.python }}" .venv
+          uv pip install --python .venv ".[test]"
+
+      - name: Tests
+        run: PATH="$PWD/.venv/bin:$PATH" python -m pytest
+
+      - name: The installed command, from outside the checkout
+        # Outside the checkout, so only the installed package is importable.
+        run: |
+          cd "$RUNNER_TEMP"
+          bin="$GITHUB_WORKSPACE/.venv/bin/histor"
+          "$bin" --version
+          "$bin" verify --version
+          "$bin" plan validate "$GITHUB_WORKSPACE/examples/age-estimation.plan.yaml"
+          "$bin" verify "$GITHUB_WORKSPACE/examples/sample-participation/evidence-bundle"
+          for bundle in "$GITHUB_WORKSPACE"/examples/tampered/*/evidence-bundle; do
+            set +e
+            "$bin" verify "$bundle" > out.txt
+            status=$?
+            set -e
+            if [ "$status" -ne 1 ]; then
+              cat out.txt
+              echo "::error::$bundle: expected exit 1, got $status"
+              exit 1
+            fi
+            grep '^  FAIL' out.txt
+          done

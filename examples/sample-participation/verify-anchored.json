@@ -1,0 +1,202 @@
+{
+  "verified": true,
+  "counts": {
+    "pass": 21,
+    "fail": 0,
+    "warn": 7
+  },
+  "results": [
+    {
+      "id": "bundle_version",
+      "question": "is this a bundle format this verifier knows how to check?",
+      "outcome": "pass",
+      "detail": "bundle_version 0.3"
+    },
+    {
+      "id": "bundle_format",
+      "question": "is the bundle's format the one its ledger was written for?",
+      "outcome": "pass",
+      "detail": "bundle_version 0.3, as the ledger's report_generated (seq 25) records"
+    },
+    {
+      "id": "signing_keys",
+      "question": "was every statement checked under a key the ledger recorded or you gave, not one read from public-keys.json alone?",
+      "outcome": "pass",
+      "detail": "control-plane (given by you), harness (given by you)"
+    },
+    {
+      "id": "signatures",
+      "question": "is every attestation the one the ledger recorded, signed by the control plane?",
+      "outcome": "pass",
+      "detail": "2 attestation(s), each the one the ledger recorded for its run, verify under the control plane's key"
+    },
+    {
+      "id": "statement_types",
+      "question": "is every signed statement of a type this verifier knows?",
+      "outcome": "pass",
+      "detail": "4 statement(s), each of a known type under https://historlabs.eu/"
+    },
+    {
+      "id": "hash_chain",
+      "question": "is the ledger hash chain intact, with no gaps?",
+      "outcome": "pass",
+      "detail": "27 entries, chain intact"
+    },
+    {
+      "id": "run_numbers",
+      "question": "was every run started once, and ended in the ledger, with no unrecorded runs?",
+      "outcome": "pass",
+      "detail": "runs [1, 2], contiguous, each started once and ended in the ledger"
+    },
+    {
+      "id": "plan_versions",
+      "question": "is every plan version the ledger records present in the bundle?",
+      "outcome": "pass",
+      "detail": "2 version(s) \u2014 the plan was amended during the participation"
+    },
+    {
+      "id": "plan_signatures",
+      "question": "was the plan signed by each party, through their own identity provider?",
+      "outcome": "warn",
+      "detail": "the plan was signed with keys the sandbox holds, not through the parties' identity providers: the bundle shows that the sandbox signed it, not who agreed to it"
+    },
+    {
+      "id": "report_signature",
+      "question": "was the exit report signed by the regulator, through their own identity provider?",
+      "outcome": "warn",
+      "detail": "report sha256:eb92d315df53\u2026 is signed through the development IdP, which issues a token for anyone: the signature identifies nobody"
+    },
+    {
+      "id": "artifact_digests",
+      "question": "do the artifacts in every run match the pins of the plan it cites?",
+      "outcome": "pass",
+      "detail": "2 run(s) match the plan's pins"
+    },
+    {
+      "id": "dataset_commitments",
+      "question": "was every dataset used committed before the run that used it?",
+      "outcome": "pass",
+      "detail": "1 committed"
+    },
+    {
+      "id": "isolation",
+      "question": "is isolation evidence present and does it match the plan's policy?",
+      "outcome": "warn",
+      "detail": "NO ISOLATION WAS ENFORCED. Every run in this bundle was executed as ordinary processes on one host. The results describe what the model answered; they establish nothing about whether it could have reached the data or the network. This bundle is a development artefact and is not sandbox evidence."
+    },
+    {
+      "id": "run_logs",
+      "question": "do the run logs in the bundle match the digests their attestations carry?",
+      "outcome": "pass",
+      "detail": "4 logs match their digests"
+    },
+    {
+      "id": "harness_statements",
+      "question": "did the harness sign what it measured, and does the attestation agree?",
+      "outcome": "pass",
+      "detail": "2 run(s): the harness signed its measurements and the attestation agrees"
+    },
+    {
+      "id": "thresholds",
+      "question": "does every stated outcome follow from the numbers reported with it?",
+      "outcome": "pass",
+      "detail": "recomputed and consistent"
+    },
+    {
+      "id": "sample_sizes",
+      "question": "were any thresholds passed on samples too small to mean anything?",
+      "outcome": "warn",
+      "detail": "2 group(s) fell below the plan's minimum and were not scored: run 1 accuracy_by_group mae age_band=18_24 (n=9), run 2 accuracy_by_group mae age_band=18_24 (n=9)"
+    },
+    {
+      "id": "deletion",
+      "question": "were keys destroyed after exit?",
+      "outcome": "pass",
+      "detail": "keys destroyed after exit: ['data/demo-001/lab-heldout-v1']"
+    },
+    {
+      "id": "completeness",
+      "question": "does the ledger end as a participation that has ended does?",
+      "outcome": "pass",
+      "detail": "exit, keys destroyed, the report and the regulator's signature over it, and the report's bundle digest matches this bundle up to seq 24"
+    },
+    {
+      "id": "timestamps",
+      "question": "are the timestamps valid, ordered, and external?",
+      "outcome": "warn",
+      "detail": "every timestamp was issued by the sandbox operator's own development authority, not by a third party. The ordering is self-consistent and anchors nothing: an operator able to rebuild this ledger could reissue these timestamps with it."
+    },
+    {
+      "id": "tsa_revocation",
+      "question": "was the timestamp authority's certificate unrevoked when it stamped?",
+      "outcome": "warn",
+      "detail": "no RFC 3161 timestamp in this ledger, so no authority certificate whose revocation could be checked: development timestamps carry none"
+    },
+    {
+      "id": "personal_data",
+      "question": "does the manifest say what personal data the bundle holds?",
+      "outcome": "pass",
+      "detail": "as the manifest says, the bundle holds personal data: staff identifiers (7, in ledger.jsonl, plan.json, plans/); idp id tokens (1, in ledger.jsonl), and no test-subject data (none of the files the export writes can carry it)"
+    },
+    {
+      "id": "i18n_catalogues",
+      "question": "is the catalogue each translated rendering of the report was made with in the bundle, as the ledger records it?",
+      "outcome": "pass",
+      "detail": "the report was rendered in English only: no catalogue to carry"
+    },
+    {
+      "id": "report_renderings",
+      "question": "is the exit report rendered in every language the plan names, each rendering named by hash in the authentic report?",
+      "outcome": "pass",
+      "detail": "the plan names no languages: one report, in English"
+    },
+    {
+      "id": "anchor_plan_digest",
+      "question": "is every plan in the bundle one whose digest you hold?",
+      "outcome": "pass",
+      "detail": "2 plan version(s), every signing and every run match the digest(s) you gave"
+    },
+    {
+      "id": "anchor_sandbox_id",
+      "question": "is this bundle the participation you were told it is?",
+      "outcome": "pass",
+      "detail": "manifest, ledger, plans and runs: demo-001"
+    },
+    {
+      "id": "anchors",
+      "question": "were the trust anchors given from outside the bundle?",
+      "outcome": "warn",
+      "detail": "the timestamp authority's root, the identity providers' keys, the network policy digest, the harness image digest, the audience the parties' IdP logins were for, the ledger head came from the bundle itself: the checks against them show that the bundle agrees with itself, not that it is the one you signed. An operator who rebuilt it could have replaced them all consistently. Pass them from outside, with --anchors or the --expect-* options."
+    },
+    {
+      "id": "bundle_digest",
+      "question": "does the bundle match the digest in its own manifest?",
+      "outcome": "pass",
+      "detail": "sha256:86b3110fde8f24e9de897c200c96b8f60edb6b190e08fc5c7ea1e610a4a65a45"
+    }
+  ],
+  "caveats": [
+    "plan_signatures: the plan was signed with keys the sandbox holds, not through the parties' identity providers: the bundle shows that the sandbox signed it, not who agreed to it",
+    "report_signature: report sha256:eb92d315df53\u2026 is signed through the development IdP, which issues a token for anyone: the signature identifies nobody",
+    "isolation: NO ISOLATION WAS ENFORCED. Every run in this bundle was executed as ordinary processes on one host. The results describe what the model answered; they establish nothing about whether it could have reached the data or the network. This bundle is a development artefact and is not sandbox evidence.",
+    "sample_sizes: 2 group(s) fell below the plan's minimum and were not scored: run 1 accuracy_by_group mae age_band=18_24 (n=9), run 2 accuracy_by_group mae age_band=18_24 (n=9)",
+    "timestamps: every timestamp was issued by the sandbox operator's own development authority, not by a third party. The ordering is self-consistent and anchors nothing: an operator able to rebuild this ledger could reissue these timestamps with it.",
+    "tsa_revocation: no RFC 3161 timestamp in this ledger, so no authority certificate whose revocation could be checked: development timestamps carry none",
+    "anchors: the timestamp authority's root, the identity providers' keys, the network policy digest, the harness image digest, the audience the parties' IdP logins were for, the ledger head came from the bundle itself: the checks against them show that the bundle agrees with itself, not that it is the one you signed. An operator who rebuilt it could have replaced them all consistently. Pass them from outside, with --anchors or the --expect-* options."
+  ],
+  "anchors": {
+    "external": [
+      "plan_digest",
+      "sandbox_id",
+      "signing_keys"
+    ],
+    "from_bundle": [
+      "tsa_root",
+      "idp_keys",
+      "policy_digest",
+      "harness_digest",
+      "audience",
+      "ledger_head"
+    ]
+  }
+}

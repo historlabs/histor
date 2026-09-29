@@ -1,0 +1,2231 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://historlabs.eu/spec/plan.schema.json",
+  "title": "Sandbox plan",
+  "description": "A sandbox plan as required by AI Act Art. 3(54) and Art. 57(5): objectives, conditions, timeframe, methodology and requirements, agreed between the participant and the competent authority. The gate compiles this into OPA data and evaluates every action against it. Every field that constrains a run must be pinned here, because the plan digest is what the attestation commits to.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "plan_version",
+    "sandbox_id",
+    "participant",
+    "timeframe",
+    "limits",
+    "artifacts",
+    "datasets",
+    "tests",
+    "roles"
+  ],
+  "properties": {
+    "plan_version": {
+      "description": "Schema version this plan is written against.",
+      "const": "0.1"
+    },
+    "sandbox_id": {
+      "description": "Identifier for this sandbox participation, unique within the authority. Appears in every attestation and ledger entry.",
+      "type": "string",
+      "pattern": "^[a-z0-9]([a-z0-9-]{1,62}[a-z0-9])$"
+    },
+    "participant": {
+      "$ref": "#/$defs/participant"
+    },
+    "timeframe": {
+      "$ref": "#/$defs/timeframe"
+    },
+    "limits": {
+      "$ref": "#/$defs/limits"
+    },
+    "artifacts": {
+      "$ref": "#/$defs/artifacts"
+    },
+    "datasets": {
+      "description": "Every dataset the plan admits. A run may only use datasets listed here, matched against their commitment.",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/dataset"
+      }
+    },
+    "tests": {
+      "description": "Every test the plan admits. A run may request a subset; it may never request a test that is not here.",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/test"
+      }
+    },
+    "roles": {
+      "$ref": "#/$defs/roles"
+    },
+    "standards": {
+      "description": "Standards this plan's test definitions claim to align with. Art. 43(1) makes the existence of a harmonised standard the hinge between the internal-control and notified-body conformity routes, so the claim belongs in the evidence rather than in a README.",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/standard"
+      },
+      "default": []
+    },
+    "objectives": {
+      "description": "Why the participant is in the sandbox and what the participation covers: draft implementing act Art. 5(2)(c), EUSAiR USF Annex XI 'Objectives & goals' and 'Sandbox activities'. The written proof reports the activities and sectors (Art. 6(2)(a)); each goal names the tests that evidence it, so the exit phase can assess the project against the plan (Art. 6(1)).",
+      "$ref": "#/$defs/objectives"
+    },
+    "development_constraints": {
+      "description": "Limitations in development, training, validation and testing that affect the use of the sandbox: EUSAiR USF Annex XI 'Development constraints' (slide summary only).",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/development_constraint"
+      }
+    },
+    "methodology": {
+      "description": "The regulatory flexibilities applied and the information-exchange arrangements: EUSAiR USF Annex XI 'Methodology' (slide summary only). The tools and methods of that section are the tests, with their statistics and standards.",
+      "$ref": "#/$defs/methodology"
+    },
+    "process_indicators": {
+      "description": "Indicators of how the participation is run, each with a target: EUSAiR USF Annex XI 'Performance metrics' (slide summary only). Distinct from a test's thresholds, which measure the AI system; these are assessed by the authority, not by the ledger.",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/process_indicator"
+      }
+    },
+    "requirements_in_scope": {
+      "description": "The requirements and obligations of the AI Act, and where relevant other Union law, that fall within the scope of the participation: draft implementing act Art. 5(2)(d). The written proof lists them as the legal requirements evaluated (Art. 6(2)(b)). A test's own article field says which article it measures; this list says what the participation set out to examine, including what no automated test measures.",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/requirement"
+      }
+    },
+    "regulatory_challenges": {
+      "description": "The regulatory challenges the participation sets out to examine: EUSAiR USF Annex XI 'Requirements' (slide summary only). The written proof lists them; how they were resolved is the authority's finding (draft implementing act Art. 6(3)(a)).",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/regulatory_challenge"
+      }
+    },
+    "personal_data": {
+      "description": "Whether the AI system involves processing personal data and whether the data protection authority is to be involved: draft implementing act Art. 5(2)(e), AI Act Art. 57(10).",
+      "$ref": "#/$defs/personal_data"
+    },
+    "risk_management": {
+      "description": "Risk management safeguards and the procedure for monitoring, managing and reporting serious incidents during the participation: draft implementing act Art. 5(2)(f).",
+      "$ref": "#/$defs/risk_management"
+    },
+    "complaints_procedure": {
+      "description": "How complaints from users or affected persons during the participation are received and handled, and by whom: EUSAiR USF Annex XI 'Requirements' (slide summary only).",
+      "type": "string",
+      "minLength": 1
+    },
+    "confidentiality": {
+      "description": "What the provider identifies as confidential under AI Act Art. 78: draft implementing act Art. 5(3). Everything not listed is presumed available for disclosure (Art. 6(6)), so the publication view of the exit report withholds exactly what is listed here.",
+      "$ref": "#/$defs/confidentiality"
+    },
+    "report": {
+      "description": "How the exit report and the written proof are rendered (AI Act Art. 57(7)). Optional in plan version 0.1: a plan without it gets them in English alone, as before.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "languages": {
+          "description": "The languages the exit report and the written proof are rendered in, each from the same evidence. The first is the authentic language: its rendering is the one the regulator signs, and it names every other rendering by sha256, so that one signature covers them all. The others are convenience translations, and say so. A language needs a catalogue under histor/i18n/locale (docs/i18n.md).",
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z]{2,3}(-[A-Z]{2})?$"
+          },
+          "examples": [
+            [
+              "lt",
+              "en"
+            ],
+            [
+              "pt-PT",
+              "en"
+            ]
+          ]
+        }
+      }
+    },
+    "execution": {
+      "description": "Where the runs under this plan execute. Optional in plan version 0.1, like the Art. 5(2) fields, so plans signed before it existed stay valid. A plan without it says nothing about the execution environment, and the default backend applies.",
+      "$ref": "#/$defs/execution"
+    },
+    "agreements": {
+      "description": "Confidentiality agreements that cover where the model runs. At an HPC centre, root on the compute node can read the decrypted model in node memory while a job runs, and no control in this system closes that. A centre's standing confidentiality undertaking, given once in favour of every participant whose runs it hosts, gives the provider a direct claim against the one party that can. The plan pins the digest of the executed document; both parties signing the plan is the provider's acceptance of it. The gate refuses a run at a centre no undertaking here covers, and the run_started entry names the agreement that did.",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/agreement"
+      }
+    },
+    "signatures": {
+      "$ref": "#/$defs/signatures"
+    },
+    "notified_body_tests": {
+      "description": "Tests the notified body may carry out itself during the participation (AI Act Annex VII, point 4.4: the notified body may carry out further tests). Optional, and additive to plan version 0.1: a plan without it pre-authorises nothing, and a test the notified body proposes is approved only by an amendment both parties sign, which adopts it here. With allowed: true, the plan pre-authorises tests within the limits below: each approver named here approves a proposal by a fresh login at their own identity provider bound to the proposal's digest, recorded in the ledger, and no amendment is needed. Either way the gate records the proposal, every approval and every refusal, and the run's attestation says it was initiated by the notified body and names the entries that authorised it.",
+      "$ref": "#/$defs/notified_body_tests"
+    }
+  },
+  "$defs": {
+    "execution": {
+      "type": "object",
+      "additionalProperties": false,
+      "minProperties": 1,
+      "properties": {
+        "centre": {
+          "$ref": "#/$defs/centre"
+        }
+      }
+    },
+    "centre": {
+      "description": "The HPC centre and partition the runs execute at, as the centre described them before the plan was signed. Results hold for the hardware they were produced on, so the plan pins it here. name, cpu_arch, runtime and personal_data_accepted are required: without them nobody can tell whether the provider's image can run there, or whether the data may go there at all. partition, accelerator and accelerator_stack are optional, because a CPU-only partition has no accelerator and a centre may assign the partition itself.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "cpu_arch",
+        "runtime",
+        "personal_data_accepted"
+      ],
+      "properties": {
+        "name": {
+          "description": "The centre and system, for example 'Example Centre, System A'. Refusals name the centre by this value.",
+          "type": "string",
+          "minLength": 1
+        },
+        "partition": {
+          "description": "The Slurm partition the job is submitted to, for example 'acc' or 'standard-g'.",
+          "type": "string",
+          "minLength": 1
+        },
+        "cpu_arch": {
+          "description": "The CPU architecture of the partition's nodes. The provider's image has to be built for it: Arm partitions (Grace Hopper nodes, for example) are aarch64, most x86 GPU partitions are x86_64.",
+          "enum": [
+            "x86_64",
+            "aarch64"
+          ]
+        },
+        "accelerator": {
+          "description": "The accelerator on each node, for example 'NVIDIA H100 64 GB x4' or 'AMD MI250X'. Left out for a partition without one.",
+          "type": "string",
+          "minLength": 1
+        },
+        "accelerator_stack": {
+          "description": "The accelerator software stack and version the centre provides, for example 'CUDA 12.4' or 'ROCm 6.2'. The model image has to match it.",
+          "type": "string",
+          "minLength": 1
+        },
+        "runtime": {
+          "description": "The container runtime the centre installs. It matters for encrypted images: Apptainer runs its own format without privilege, while SingularityCE and Singularity PRO open theirs only through a setuid installation, so the provider builds for the runtime named here.",
+          "enum": [
+            "apptainer",
+            "singularityce",
+            "singularity-pro"
+          ]
+        },
+        "personal_data_accepted": {
+          "description": "The most sensitive personal data the centre allows on the system the job runs on, as the centre stated it: 'none', 'personal' (ordinary personal data, but not GDPR Art. 9 special-category data) or 'special_category'. The plan loader refuses a plan whose datasets or personal_data declare more than this. Some centres accept no special-category data at all.",
+          "enum": [
+            "none",
+            "personal",
+            "special_category"
+          ]
+        },
+        "lease_seconds": {
+          "description": "How long a run may continue without hearing from the control plane. The courier renews the lease every lease_seconds / 3, and a run whose lease expires halts. Shorter halts faster and costs more SSH round trips. Defaults to 300 when left out. At least 60, so a renewal over a slow SSH link does not halt a healthy run, and at most 3600, so a halt takes effect within the hour.",
+          "type": "integer",
+          "minimum": 60,
+          "maximum": 3600,
+          "default": 300
+        }
+      }
+    },
+    "sha256_digest": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "description": "Lowercase hex SHA-256, prefixed. Matches the OCI digest form."
+    },
+    "email": {
+      "type": "string",
+      "format": "email",
+      "pattern": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$"
+    },
+    "participant": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "provider",
+        "system_name",
+        "intended_purpose",
+        "annex_iii_category"
+      ],
+      "properties": {
+        "provider": {
+          "type": "string",
+          "minLength": 1
+        },
+        "system_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "intended_purpose": {
+          "description": "The intended purpose as declared for conformity assessment. Accuracy and robustness are judged against this and nothing else (Art. 15(1)), so it is not a marketing sentence.",
+          "type": "string",
+          "minLength": 1
+        },
+        "annex_iii_category": {
+          "description": "Annex III category. An enum rather than free text because it decides which obligations apply: 1(a) alone carries the Art. 12(3) log fields and the Art. 14(5) two-person rule; 1(a)-(c) carry the Art. 43(1) notified-body route; 1(b) and 1(c) carry Art. 50 disclosure. Use not_annex_iii for a system that is high-risk by another route or is being tested without a high-risk claim.",
+          "enum": [
+            "1(a)",
+            "1(b)",
+            "1(c)",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "not_annex_iii"
+          ]
+        },
+        "classification_note": {
+          "description": "Why this category and not a neighbouring one. Required when the classification is contested or provisional; read by whoever inherits the evidence.",
+          "type": "string"
+        }
+      }
+    },
+    "timeframe": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "start",
+        "end"
+      ],
+      "properties": {
+        "start": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "end": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "milestones": {
+          "description": "Key milestones within the timeframe: EUSAiR USF Annex XI 'Timeframe'. Informational; the gate enforces start and end only.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "name",
+              "due"
+            ],
+            "properties": {
+              "name": {
+                "type": "string",
+                "minLength": 1
+              },
+              "due": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          }
+        }
+      }
+    },
+    "limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "max_runs",
+        "max_run_duration_minutes"
+      ],
+      "properties": {
+        "max_runs": {
+          "description": "Hard cap on runs under this plan. Run numbers are monotonic and contiguous, so the verifier can prove no run was hidden.",
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_run_duration_minutes": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_requests_per_minute": {
+          "description": "Relay rate limit for this participation.",
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "artifacts": {
+      "description": "Everything whose identity the run attestation commits to. A digest that does not match its pin is a gate denial, not a warning.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "model_image_digest",
+        "harness_image_digest",
+        "relay_image_digest",
+        "network_policy_digest"
+      ],
+      "properties": {
+        "model_image_digest": {
+          "$ref": "#/$defs/sha256_digest"
+        },
+        "harness_image_digest": {
+          "$ref": "#/$defs/sha256_digest"
+        },
+        "relay_image_digest": {
+          "$ref": "#/$defs/sha256_digest"
+        },
+        "network_policy_digest": {
+          "description": "Digest over the network policy files that enforce segment isolation. Repeated in every attestation so the verifier can bind results to the isolation that produced them.",
+          "$ref": "#/$defs/sha256_digest"
+        },
+        "prompt_digest": {
+          "description": "Digest of the fixed prompt text the harness sends. Pinned because changing the prompt changes the system under test.",
+          "$ref": "#/$defs/sha256_digest"
+        },
+        "model_weights": {
+          "$ref": "#/$defs/model_weights"
+        },
+        "tee_policy": {
+          "$ref": "#/$defs/tee_policy"
+        }
+      }
+    },
+    "model_weights": {
+      "description": "The provider's weights, shipped as a file encrypted under a key only the provider holds, separately from a model image that holds none. For each run the provider's releaser seals the key to the job's public key, the same key the data keys go to. Only ciphertext passes through the sandbox. Both digests are pinned: the ciphertext is what is cached and carried, the plaintext is what the model loads, and the job checks both before the model starts.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "format",
+        "name",
+        "ciphertext_digest",
+        "plaintext_digest",
+        "releaser_public_key",
+        "provider_signature"
+      ],
+      "properties": {
+        "format": {
+          "const": "sbx-weights-v1"
+        },
+        "name": {
+          "description": "The file name the model reads, under /run/weights.",
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"
+        },
+        "ciphertext_digest": {
+          "$ref": "#/$defs/sha256_digest"
+        },
+        "plaintext_digest": {
+          "$ref": "#/$defs/sha256_digest"
+        },
+        "releaser_public_key": {
+          "description": "PEM of the provider's releaser key (Ed25519, key id provider-releaser). It signs this pin, and the receipt or refusal for every release.",
+          "type": "string",
+          "minLength": 1
+        },
+        "provider_signature": {
+          "description": "Base64 of a DSSE envelope, by the releaser key, over format, name, ciphertext_digest and plaintext_digest.",
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "dataset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "role",
+        "commitment",
+        "special_category"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9]([a-z0-9-]{0,62}[a-z0-9])?$"
+        },
+        "role": {
+          "description": "provider_data is examined for how it was assembled (Art. 10), not used as the main performance evidence. independent_heldout is owned by the test lab; the provider never sees items or item-level results. synthetic is generated, used for robustness perturbations.",
+          "enum": [
+            "provider_data",
+            "independent_heldout",
+            "synthetic"
+          ]
+        },
+        "commitment": {
+          "description": "Commitment to the dataset contents, made before any run: spec/dataset-commitment.md (scheme v2, or a v1 value from before 2026-09-28). Re-committing a different dataset under the same id is a gate denial.",
+          "$ref": "#/$defs/sha256_digest"
+        },
+        "owner_role": {
+          "description": "Role that holds the data key. Defaults to test_lab for independent_heldout.",
+          "enum": [
+            "regulator",
+            "dpa",
+            "test_lab",
+            "provider"
+          ]
+        },
+        "groups": {
+          "description": "Group attributes carried as labels for this dataset. Labels never leave segment A; they are named here so the plan states which disaggregations the tests may request.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "special_category": {
+          "$ref": "#/$defs/special_category"
+        },
+        "retention": {
+          "$ref": "#/$defs/retention"
+        },
+        "processors": {
+          "description": "People who process this dataset on its holder's behalf (GDPR Art. 28) and may therefore look at its items in the console. Each look is a gate decision in the ledger. A dataset that names no processors can be viewed by no data_processor.",
+          "$ref": "#/$defs/role_members"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "role": {
+                "const": "independent_heldout"
+              }
+            },
+            "required": [
+              "role"
+            ]
+          },
+          "then": {
+            "required": [
+              "owner_role"
+            ]
+          }
+        }
+      ]
+    },
+    "special_category": {
+      "description": "GDPR Art. 9 special-category content, and the basis for processing it. Art. 4 bis (inserted by the Digital Omnibus, replacing the deleted Art. 10(5)) permits processing strictly necessary to detect and correct bias, on six cumulative conditions. Five are architectural and enforced elsewhere; condition (f) is a record, and this is where it lives. Required on every dataset so that 'no special-category data' is an assertion someone signed rather than an omission.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "contains_special_category"
+      ],
+      "properties": {
+        "contains_special_category": {
+          "type": "boolean"
+        },
+        "categories": {
+          "description": "Which Art. 9(1) categories are present.",
+          "type": "array",
+          "items": {
+            "enum": [
+              "racial_or_ethnic_origin",
+              "political_opinions",
+              "religious_or_philosophical_beliefs",
+              "trade_union_membership",
+              "genetic_data",
+              "biometric_data_for_unique_identification",
+              "health",
+              "sex_life_or_sexual_orientation"
+            ]
+          },
+          "uniqueItems": true
+        },
+        "basis": {
+          "description": "Legal basis relied on at plan-signing time. Recorded rather than assumed, so the evidence stays interpretable after the next amendment.",
+          "enum": [
+            "art_4bis_1",
+            "art_4bis_2",
+            "other"
+          ]
+        },
+        "basis_note": {
+          "description": "Required when basis is other: which provision, and why.",
+          "type": "string"
+        },
+        "necessity_justification": {
+          "description": "Art. 4 bis(1)(f): why processing special-category data was strictly necessary to detect and correct bias, and why synthetic or anonymised data could not achieve it (condition (a)). Reproduced verbatim in the exit report as the record the GDPR Art. 30 register must carry.",
+          "type": "string",
+          "minLength": 1
+        },
+        "anonymised": {
+          "type": "boolean"
+        },
+        "pseudonymised": {
+          "type": "boolean"
+        },
+        "anonymisation_impact_note": {
+          "description": "Art. 4 bis(1)(b) and the guidance on it: where data was not anonymised, how anonymisation would have significantly impaired bias detection.",
+          "type": "string"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "contains_special_category": {
+                "const": true
+              }
+            },
+            "required": [
+              "contains_special_category"
+            ]
+          },
+          "then": {
+            "required": [
+              "basis",
+              "necessity_justification",
+              "categories"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "basis": {
+                "const": "other"
+              }
+            },
+            "required": [
+              "basis"
+            ]
+          },
+          "then": {
+            "required": [
+              "basis_note"
+            ]
+          }
+        }
+      ]
+    },
+    "retention": {
+      "description": "Art. 4 bis(1)(e): erasure once the bias is corrected or the retention period ends, whichever is first. Erasure is by crypto-shredding of the data key; the event is signed and recorded.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "erasure_trigger"
+      ],
+      "properties": {
+        "erasure_trigger": {
+          "enum": [
+            "bias_corrected",
+            "retention_end",
+            "exit"
+          ]
+        },
+        "retention_end": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "erasure_trigger": {
+                "const": "retention_end"
+              }
+            },
+            "required": [
+              "erasure_trigger"
+            ]
+          },
+          "then": {
+            "required": [
+              "retention_end"
+            ]
+          }
+        }
+      ]
+    },
+    "statistics": {
+      "description": "What makes a reported number admissible. A per-group rate computed over a handful of items is not evidence, and a plan that sets a between-group gap threshold without saying how many items per group is asking for both false alarms and false clearances.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "min_items_per_group"
+      ],
+      "properties": {
+        "min_items_per_group": {
+          "description": "The harness refuses to score a group below this count and reports it as insufficient rather than emitting a meaningless rate.",
+          "type": "integer",
+          "minimum": 1
+        },
+        "confidence_level": {
+          "description": "Confidence level for the interval reported alongside every metric.",
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "exclusiveMaximum": 1,
+          "default": 0.95
+        },
+        "interval_method": {
+          "enum": [
+            "wilson",
+            "clopper_pearson",
+            "bootstrap",
+            "normal"
+          ],
+          "default": "wilson"
+        },
+        "multiple_comparison_correction": {
+          "description": "Applied when several groups are compared pairwise.",
+          "enum": [
+            "none",
+            "bonferroni",
+            "benjamini_hochberg"
+          ],
+          "default": "bonferroni"
+        }
+      }
+    },
+    "baseline": {
+      "description": "What the metric is compared against. A false-adult rate that barely beats waving everyone through is exactly the finding a sandbox exists to surface, so the comparison is part of the test, not a footnote.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "constant_is_adult",
+            "constant_not_adult",
+            "median_age",
+            "none"
+          ]
+        },
+        "note": {
+          "type": "string"
+        }
+      }
+    },
+    "test": {
+      "type": "object",
+      "required": [
+        "id",
+        "type"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/test_id"
+        },
+        "type": {
+          "enum": [
+            "accuracy_by_group",
+            "rate_by_group",
+            "robustness",
+            "determinism",
+            "decision_logging",
+            "adversarial_robustness",
+            "fail_safe"
+          ]
+        },
+        "article": {
+          "$ref": "#/$defs/test_article"
+        },
+        "evidences": {
+          "$ref": "#/$defs/test_evidences"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "accuracy_by_group"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/test_accuracy_by_group"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "rate_by_group"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/test_rate_by_group"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "robustness"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/test_robustness"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "determinism"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/test_determinism"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "decision_logging"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/test_decision_logging"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "adversarial_robustness"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/test_adversarial_robustness"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "fail_safe"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/test_fail_safe"
+          }
+        }
+      ]
+    },
+    "test_accuracy_by_group": {
+      "title": "accuracy_by_group",
+      "description": "Error metrics over a dataset, disaggregated by group. Annex IV point 3 requires accuracy levels for the specific persons or groups of persons the system is intended for, which is why the disaggregation is the test rather than an extra.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "type",
+        "dataset",
+        "metrics",
+        "groups",
+        "statistics"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/test_id"
+        },
+        "type": {
+          "const": "accuracy_by_group"
+        },
+        "article": {
+          "$ref": "#/$defs/test_article"
+        },
+        "evidences": {
+          "$ref": "#/$defs/test_evidences"
+        },
+        "dataset": {
+          "type": "string"
+        },
+        "metrics": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "enum": [
+              "mae",
+              "rmse",
+              "max_error",
+              "mape"
+            ]
+          },
+          "uniqueItems": true
+        },
+        "groups": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true
+        },
+        "statistics": {
+          "$ref": "#/$defs/statistics"
+        },
+        "baseline": {
+          "$ref": "#/$defs/baseline"
+        },
+        "thresholds": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "max_per_group": {
+              "type": "number"
+            },
+            "max_gap_between_groups": {
+              "type": "number",
+              "minimum": 0
+            }
+          }
+        }
+      }
+    },
+    "test_rate_by_group": {
+      "title": "rate_by_group",
+      "description": "A binary-outcome rate over a dataset, disaggregated by group. false_adult_rate is the share of items whose true age is under the threshold that the system called adult — the harm this demo exists to measure.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "type",
+        "dataset",
+        "metric",
+        "groups",
+        "statistics",
+        "thresholds"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/test_id"
+        },
+        "type": {
+          "const": "rate_by_group"
+        },
+        "article": {
+          "$ref": "#/$defs/test_article"
+        },
+        "evidences": {
+          "$ref": "#/$defs/test_evidences"
+        },
+        "dataset": {
+          "type": "string"
+        },
+        "metric": {
+          "enum": [
+            "false_adult_rate",
+            "false_minor_rate",
+            "error_rate"
+          ]
+        },
+        "groups": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true
+        },
+        "statistics": {
+          "$ref": "#/$defs/statistics"
+        },
+        "baseline": {
+          "$ref": "#/$defs/baseline"
+        },
+        "thresholds": {
+          "type": "object",
+          "additionalProperties": false,
+          "minProperties": 1,
+          "properties": {
+            "max_per_group": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "max_gap_between_groups": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "max_overall": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          }
+        }
+      }
+    },
+    "test_robustness": {
+      "title": "robustness",
+      "description": "Behaviour under input perturbation. Perturbations are functions of a bounded parameter rather than fixed presets, so the harness can sweep severity and report a degradation curve instead of a single before-and-after pair.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "type",
+        "dataset",
+        "perturbations",
+        "thresholds"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/test_id"
+        },
+        "type": {
+          "const": "robustness"
+        },
+        "article": {
+          "$ref": "#/$defs/test_article"
+        },
+        "evidences": {
+          "$ref": "#/$defs/test_evidences"
+        },
+        "dataset": {
+          "type": "string"
+        },
+        "perturbations": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/perturbation"
+          }
+        },
+        "statistics": {
+          "$ref": "#/$defs/statistics"
+        },
+        "thresholds": {
+          "type": "object",
+          "additionalProperties": false,
+          "minProperties": 1,
+          "properties": {
+            "max_false_adult_rate_increase": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "max_mae_increase": {
+              "type": "number",
+              "minimum": 0
+            }
+          }
+        }
+      }
+    },
+    "perturbation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "parameter",
+        "range"
+      ],
+      "properties": {
+        "name": {
+          "description": "Perturbations chosen for a camera bolted to an unattended machine: a smeared or fingerprinted lens, a bright spot from a shop window, a camera knocked off angle.",
+          "enum": [
+            "gaussian_blur",
+            "low_light",
+            "jpeg_compression",
+            "gaussian_noise",
+            "rotation",
+            "brightness",
+            "blooming",
+            "smear",
+            "droplets"
+          ]
+        },
+        "parameter": {
+          "description": "Name of the bounded parameter that is varied, for the record. Its meaning is fixed by the perturbation implementation and its digest.",
+          "type": "string",
+          "minLength": 1
+        },
+        "range": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "min",
+            "max",
+            "steps"
+          ],
+          "properties": {
+            "min": {
+              "type": "number"
+            },
+            "max": {
+              "type": "number"
+            },
+            "steps": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        }
+      }
+    },
+    "test_adversarial_robustness": {
+      "title": "adversarial robustness",
+      "description": "Black-box, query-budgeted attacks on true minors from the test's dataset: how often an attacker who can only show the camera an image and read the answer turns a refused minor into a served one. The model is behind the relay, so no attack uses gradients; every query goes through the relay and is logged and counted. The headline rate is over minors the system refused on the clean image, counting an item as broken if any planned attack broke it within its budget. This is not a penetration test of the system under test.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "type",
+        "dataset",
+        "max_items",
+        "attacks",
+        "decoy_fraction",
+        "thresholds"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/test_id"
+        },
+        "type": {
+          "const": "adversarial_robustness"
+        },
+        "article": {
+          "$ref": "#/$defs/test_article"
+        },
+        "evidences": {
+          "$ref": "#/$defs/test_evidences"
+        },
+        "dataset": {
+          "type": "string"
+        },
+        "max_items": {
+          "description": "How many true minors to attack, sampled with the run's seed. With the attacks' query budgets this fixes the most calls the test can make.",
+          "type": "integer",
+          "minimum": 1
+        },
+        "attacks": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/attack"
+          }
+        },
+        "groups": {
+          "description": "Group attributes to disaggregate the attack success rate by. Carried by the dataset; never sent to the model.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true
+        },
+        "decoy_fraction": {
+          "description": "Share of in-scope decoy calls interleaved with this test's calls, drawn from the test's dataset and not scored, so the test's inputs do not arrive as a recognisable block. Every decoy is a call, logged and counted like the rest.",
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "statistics": {
+          "$ref": "#/$defs/statistics"
+        },
+        "thresholds": {
+          "type": "object",
+          "additionalProperties": false,
+          "minProperties": 1,
+          "properties": {
+            "max_attack_success_rate": {
+              "description": "Upper limit on the share of refused minors any planned attack turned into is_adult=true.",
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "max_attack_success_rate_ci_high": {
+              "description": "Upper limit on the upper bound of that rate's interval: a stricter plan can require the evidence to rule out a rate, not merely not observe it.",
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "max_attack_success_rate_per_group": {
+              "description": "Upper limit on the attack success rate in any group that met the plan's minimum sample.",
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          }
+        }
+      }
+    },
+    "attack": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "queries_per_item"
+      ],
+      "properties": {
+        "name": {
+          "description": "random_noise: worst of k independent perturbations at the vertices of the L-infinity ball. square_search: score-based random search in the same ball, keeping changes that raise the returned age. occlusion: a solid patch at a random position and colour.",
+          "enum": [
+            "random_noise",
+            "square_search",
+            "occlusion"
+          ]
+        },
+        "queries_per_item": {
+          "description": "Query budget per item for this attack. The attack stops at the first is_adult=true.",
+          "type": "integer",
+          "minimum": 1
+        },
+        "epsilon": {
+          "description": "L-infinity bound in 8-bit pixel units (0-255), for random_noise and square_search.",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 64
+        },
+        "square_fraction": {
+          "description": "square_search: side of the square re-drawn per query, as a fraction of the frame's shorter side.",
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 1
+        },
+        "patch_fraction": {
+          "description": "occlusion: side of the patch, as a fraction of the frame's shorter side.",
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 1
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "name": {
+                "enum": [
+                  "random_noise",
+                  "square_search"
+                ]
+              }
+            },
+            "required": [
+              "name"
+            ]
+          },
+          "then": {
+            "required": [
+              "epsilon"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "name": {
+                "const": "square_search"
+              }
+            },
+            "required": [
+              "name"
+            ]
+          },
+          "then": {
+            "required": [
+              "square_fraction"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "name": {
+                "const": "occlusion"
+              }
+            },
+            "required": [
+              "name"
+            ]
+          },
+          "then": {
+            "required": [
+              "patch_fraction"
+            ]
+          }
+        }
+      ]
+    },
+    "test_fail_safe": {
+      "title": "fail-safe",
+      "description": "Synthetic out-of-scope inputs (a covered lens, an empty scene, noise, a printed card, a minor's frame squashed or shrunk) sent through the relay among in-scope decoys. The system under test should fail closed: not approve the sale, and not claim confidence it cannot have. Tests the system's behaviour at the edge of its intended purpose; it is not a penetration test.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "type",
+        "dataset",
+        "items_per_kind",
+        "inputs",
+        "decoy_fraction",
+        "thresholds"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/test_id"
+        },
+        "type": {
+          "const": "fail_safe"
+        },
+        "article": {
+          "$ref": "#/$defs/test_article"
+        },
+        "evidences": {
+          "$ref": "#/$defs/test_evidences"
+        },
+        "dataset": {
+          "description": "Source of the minors' images the geometric kinds are made from, and of the decoys.",
+          "type": "string"
+        },
+        "items_per_kind": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "inputs": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/out_of_scope_input"
+          }
+        },
+        "decoy_fraction": {
+          "description": "Share of in-scope decoy calls interleaved with this test's calls, drawn from the test's dataset and not scored, so the test's inputs do not arrive as a recognisable block. Every decoy is a call, logged and counted like the rest.",
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "statistics": {
+          "$ref": "#/$defs/statistics"
+        },
+        "thresholds": {
+          "type": "object",
+          "additionalProperties": false,
+          "minProperties": 1,
+          "properties": {
+            "max_approval_rate": {
+              "description": "Upper limit on the share of out-of-scope inputs answered is_adult=true.",
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "max_approval_rate_per_kind": {
+              "description": "The same limit, for the worst kind that met the plan's minimum sample.",
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "max_mean_confidence": {
+              "description": "Upper limit on the mean confidence reported for out-of-scope inputs.",
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          }
+        }
+      }
+    },
+    "out_of_scope_input": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind"
+      ],
+      "properties": {
+        "kind": {
+          "description": "blank: one flat colour. no_face: an empty, lit scene. uniform_noise: random pixels. non_photographic: flat shapes and text-like bars. extreme_aspect_ratio and tiny: a true minor's frame from the dataset, squashed or shrunk.",
+          "enum": [
+            "blank",
+            "no_face",
+            "uniform_noise",
+            "non_photographic",
+            "extreme_aspect_ratio",
+            "tiny"
+          ]
+        },
+        "aspect_ratio": {
+          "description": "extreme_aspect_ratio: long side over short side.",
+          "type": "number",
+          "exclusiveMinimum": 1
+        },
+        "side_px": {
+          "description": "tiny: side of the square frame in pixels.",
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "extreme_aspect_ratio"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "required": [
+              "aspect_ratio"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "tiny"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "required": [
+              "side_px"
+            ]
+          }
+        }
+      ]
+    },
+    "test_determinism": {
+      "title": "determinism",
+      "description": "Repeat a fraction of items within the same run. The harness always sends temperature 0 and a fixed seed, so a flipped decision is a property of the system under test, not of the request.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "type",
+        "repeats_fraction",
+        "thresholds"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/test_id"
+        },
+        "type": {
+          "const": "determinism"
+        },
+        "article": {
+          "$ref": "#/$defs/test_article"
+        },
+        "evidences": {
+          "$ref": "#/$defs/test_evidences"
+        },
+        "dataset": {
+          "type": "string"
+        },
+        "repeats_fraction": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 1
+        },
+        "thresholds": {
+          "type": "object",
+          "additionalProperties": false,
+          "minProperties": 1,
+          "properties": {
+            "max_is_adult_flip_rate": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "max_age_stdev": {
+              "type": "number",
+              "minimum": 0
+            }
+          }
+        }
+      }
+    },
+    "test_decision_logging": {
+      "title": "decision_logging",
+      "description": "Art. 12: does the system actually log its decisions, and can every request the relay issued be found in that log? Retention is stated here because Art. 19(1) puts a floor under it and the exit report has to show the floor was respected.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "type",
+        "thresholds"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/test_id"
+        },
+        "type": {
+          "const": "decision_logging"
+        },
+        "article": {
+          "$ref": "#/$defs/test_article"
+        },
+        "evidences": {
+          "$ref": "#/$defs/test_evidences"
+        },
+        "required_fields": {
+          "description": "Fields every log line must carry, beyond ts/request_id/output. See spec/inference-profile.md.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "retention_months": {
+          "description": "Retention the participant commits to for these logs. Art. 19(1) sets a floor of six months for logs under the provider's control; Art. 26(6) says the same for deployers.",
+          "type": "integer",
+          "minimum": 6
+        },
+        "thresholds": {
+          "type": "object",
+          "additionalProperties": false,
+          "minProperties": 1,
+          "properties": {
+            "min_log_coverage": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "max_unmatched_request_ids": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        }
+      }
+    },
+    "roles": {
+      "description": "Who may do what. The gate checks the caller's role against the action; nothing in the system is reachable except through it.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "regulator",
+        "provider"
+      ],
+      "properties": {
+        "regulator": {
+          "$ref": "#/$defs/role_members"
+        },
+        "dpa": {
+          "description": "Data protection authority, associated with the sandbox under Art. 57(10).",
+          "$ref": "#/$defs/role_members"
+        },
+        "test_lab": {
+          "$ref": "#/$defs/role_members"
+        },
+        "provider": {
+          "$ref": "#/$defs/role_members"
+        },
+        "data_processor": {
+          "description": "Processes the test data on the data holder's behalf. May view the items of the datasets that name them in `processors`; never results, never model outputs.",
+          "$ref": "#/$defs/role_members"
+        },
+        "notified_body": {
+          "description": "Annex VII §4.3 entitles a notified body to test-data access through technical means enabling remote access, subject to security safeguards. This role is that access: plan, commitments, attestations, isolation evidence, report, evidence bundle. Never item-level outputs from the held-out set.",
+          "$ref": "#/$defs/role_members"
+        }
+      }
+    },
+    "role_members": {
+      "description": "The people who hold a role in this participation. The console only admits someone to a role the plan names them in, whatever their identity provider says.",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/role_member"
+      },
+      "uniqueItems": true
+    },
+    "standard": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "status"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "title": {
+          "type": "string"
+        },
+        "status": {
+          "description": "harmonised means published in the OJ under Art. 40, which changes the conformity route available under Art. 43(1). draft means it exists but cannot yet be relied on.",
+          "enum": [
+            "harmonised",
+            "common_specification",
+            "draft",
+            "other"
+          ]
+        },
+        "alignment": {
+          "description": "What this plan claims. 'aligned' is a claim someone signed; 'tracked' means we expect to align once it is adopted.",
+          "enum": [
+            "aligned",
+            "partial",
+            "tracked"
+          ]
+        }
+      }
+    },
+    "objectives": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "goals",
+        "activities"
+      ],
+      "properties": {
+        "goals": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "description"
+            ],
+            "properties": {
+              "id": {
+                "$ref": "#/$defs/test_id"
+              },
+              "description": {
+                "type": "string",
+                "minLength": 1
+              },
+              "evidenced_by": {
+                "description": "Test ids in this plan whose outcomes evidence this goal. A goal with none is assessed by the authority, not by the ledger, and the written proof says so.",
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/test_id"
+                },
+                "uniqueItems": true
+              }
+            }
+          }
+        },
+        "activities": {
+          "description": "The types of activity the participation covers, in the terms of AI Act Art. 57(5) and draft implementing act Art. 6(2)(a).",
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "development",
+              "training",
+              "validation",
+              "testing"
+            ]
+          }
+        },
+        "sectors": {
+          "description": "The sector or sectors in which the sandbox operates, for the written proof (Art. 6(2)(a)).",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "cooperation": {
+          "description": "Planned cooperation with authorities, experts and ecosystem actors: EUSAiR USF Annex XI 'Sandbox activities' (slide summary only). Informational; who acts on the participation is set by roles.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/cooperation"
+          }
+        }
+      }
+    },
+    "requirement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "reference"
+      ],
+      "properties": {
+        "reference": {
+          "description": "The provision, e.g. 'AI Act Art. 15' or 'GDPR Art. 35'.",
+          "type": "string",
+          "minLength": 1
+        },
+        "note": {
+          "type": "string"
+        }
+      }
+    },
+    "personal_data": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "processed",
+        "dpa_involvement"
+      ],
+      "properties": {
+        "processed": {
+          "type": "boolean"
+        },
+        "dpa_involvement": {
+          "description": "'required' obliges the plan to name the data protection authority under roles.dpa.",
+          "enum": [
+            "required",
+            "not_required"
+          ]
+        },
+        "categories": {
+          "description": "The categories of personal data processed in the sandbox. The EDPS's formal comments on the draft implementing act (6 March 2026, point 13) recommend the plan state them, with the scope and modalities of the processing and its safeguards.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "legal_basis": {
+          "description": "The legal basis under data protection law relied on for the processing. Art. 59 AI Act supplies one only for public-interest systems; otherwise it must be identified (EDPS formal comments, point 15). Required when processed is true.",
+          "type": "string",
+          "minLength": 1
+        },
+        "note": {
+          "type": "string"
+        }
+      }
+    },
+    "risk_management": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "safeguards",
+        "serious_incident_procedure"
+      ],
+      "properties": {
+        "safeguards": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "serious_incident_procedure": {
+          "description": "How a serious incident (AI Act Art. 3(49)) during the participation is monitored, managed and reported, and to whom.",
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "confidentiality": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "confidential"
+      ],
+      "properties": {
+        "confidential": {
+          "description": "JSON Pointers (RFC 6901) into this plan. Each must resolve. The value at each pointer, and every occurrence of it as text, is withheld from the publication view.",
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^(/[^/]*)+$"
+          }
+        },
+        "note": {
+          "type": "string"
+        }
+      }
+    },
+    "signatures": {
+      "description": "Art. 57(5): the plan is agreed between the participant and the competent authority. Absent until the plan is signed; the gate refuses every action under an unsigned plan.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "provider": {
+          "type": "string",
+          "minLength": 1
+        },
+        "regulator": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "test_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]([a-z0-9_]{0,62}[a-z0-9])?$"
+    },
+    "test_article": {
+      "description": "AI Act article(s) this test produces evidence for. Free text because it may name several.",
+      "type": "string"
+    },
+    "test_evidences": {
+      "description": "External requirement-catalogue measures this test evidences, as <catalogue>/<checklist>/<id>, e.g. catalogue/Precision/MG01. Optional, and deliberately not baked into the schema's own vocabulary.",
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "role_member": {
+      "description": "An email, matched against a verified email from a trusted IdP; or an object naming the IdP and, preferably, its stable subject identifier (sub, or oid for Microsoft Entra ID). An email can be reassigned; a subject cannot. Name everyone who signs for the provider or the regulator as {\"issuer\": \"<the IdP's iss URL>\", \"subject\": \"<sub>\"}: the verifier binds their plan and report signatures to that pair. A signer named by email only is a warning, and fails `histor verify` under any anchor unless the object pins the issuer and the IdP's token says `email_verified: true`.",
+      "oneOf": [
+        {
+          "$ref": "#/$defs/email"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "issuer"
+          ],
+          "anyOf": [
+            {
+              "required": [
+                "subject"
+              ]
+            },
+            {
+              "required": [
+                "email"
+              ]
+            }
+          ],
+          "properties": {
+            "issuer": {
+              "description": "The IdP's issuer URL, or the name the sandbox's trust configuration gives it. For a signing party, the issuer URL: it is matched against the ID token's iss, which carries no console-given name.",
+              "type": "string",
+              "minLength": 1
+            },
+            "subject": {
+              "description": "The IdP's stable identifier for the person: the ID token's sub, or oid for Microsoft Entra ID. The preferred binding, with issuer.",
+              "type": "string",
+              "minLength": 1
+            },
+            "audience": {
+              "description": "Optional. The client id (or ids) the sandbox console is registered under at this person's IdP. When given, the verifier requires the ID token behind each of their plan or report signatures to be issued to it (aud, and azp when there are several), as `histor verify --expect-audience` does, so a login to another application cannot be recorded as their signature.",
+              "oneOf": [
+                {
+                  "type": "string",
+                  "minLength": 1
+                },
+                {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              ]
+            },
+            "email": {
+              "$ref": "#/$defs/email"
+            },
+            "name": {
+              "description": "For people reading the plan. Not matched.",
+              "type": "string"
+            }
+          }
+        }
+      ]
+    },
+    "cooperation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "with",
+        "kind",
+        "purpose"
+      ],
+      "properties": {
+        "with": {
+          "description": "The authority, expert or organisation.",
+          "type": "string",
+          "minLength": 1
+        },
+        "kind": {
+          "enum": [
+            "authority",
+            "expert",
+            "ecosystem"
+          ]
+        },
+        "purpose": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "development_constraint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "constraint"
+      ],
+      "properties": {
+        "activity": {
+          "description": "The activity the constraint limits, if one.",
+          "enum": [
+            "development",
+            "training",
+            "validation",
+            "testing"
+          ]
+        },
+        "constraint": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "methodology": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "regulatory_flexibilities": {
+          "description": "Flexibilities the authority applies in the sandbox, e.g. guidance on how a requirement may be met, each with the provision it concerns where there is one.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "description"
+            ],
+            "properties": {
+              "description": {
+                "type": "string",
+                "minLength": 1
+              },
+              "reference": {
+                "description": "The provision, e.g. 'AI Act Art. 14'.",
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        },
+        "information_exchange": {
+          "description": "How the parties exchange information during the participation: channels, meetings and their frequency.",
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "process_indicator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "description",
+        "target"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/test_id"
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "target": {
+          "description": "What counts as met, in words, e.g. 'within 10 working days'.",
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "regulatory_challenge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "challenge"
+      ],
+      "properties": {
+        "challenge": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reference": {
+          "description": "The provision the challenge concerns. When given, and the plan declares requirements_in_scope, it must be one of them.",
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "agreement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "kind",
+        "centre",
+        "document_sha256",
+        "valid_from",
+        "valid_until",
+        "clauses"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9_-]*$"
+        },
+        "kind": {
+          "description": "centre_undertaking: signed by the centre alone, once, in favour of every sandbox participant whose runs it hosts.",
+          "enum": [
+            "centre_undertaking"
+          ]
+        },
+        "centre": {
+          "description": "The centre as its isolation evidence names it (isolation_evidence.centre). A run at any other centre is not covered.",
+          "type": "string",
+          "minLength": 1
+        },
+        "document_sha256": {
+          "description": "Digest of the executed document. The document itself stays with the parties; it may be confidential.",
+          "$ref": "#/$defs/sha256_digest"
+        },
+        "valid_from": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "valid_until": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "clauses": {
+          "description": "The privileged paths to the decrypted model the undertaking addresses. The gate requires every one: an undertaking that leaves one out leaves that path uncovered. root_memory: reading a job's memory with privileges. crash_dumps: kernel crash dumps (kdump) of a node that held a job. core_files: process core files. monitoring: tools that attach to or sample a job's processes. hardware_service: a node taken out of service or returned to a vendor with a job's memory or local storage in it.",
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "root_memory",
+              "crash_dumps",
+              "core_files",
+              "monitoring",
+              "hardware_service"
+            ]
+          }
+        },
+        "signatory": {
+          "description": "Who signed for the centre, as the document says.",
+          "type": "string"
+        },
+        "note": {
+          "type": "string"
+        }
+      }
+    },
+    "tee_policy": {
+      "description": "Optional. What a hardware attestation report must show before a key is released to a run, and what the verifier holds every recorded report to. Present, the key broker and the provider's releaser release keys only to a trusted execution environment whose report meets it, and a run without such evidence fails the verifier's tee_attestation check. Platform mock is accepted only where it is listed here with its root: it is software made for tests and the demo, not hardware.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "platforms",
+        "measurements",
+        "init_data_digest",
+        "vendor_roots"
+      ],
+      "properties": {
+        "platforms": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "sev-snp",
+              "tdx",
+              "mock"
+            ]
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "measurements": {
+          "description": "Accepted launch measurements (SEV-SNP MEASUREMENT, TDX MRTD), lowercase hex.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^([0-9a-f]{64}|[0-9a-f]{96})$"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "init_data_digest": {
+          "description": "The launch configuration that pins the harness image, as the report states it (SEV-SNP HOST_DATA, TDX MRCONFIGID), lowercase hex.",
+          "type": "string",
+          "pattern": "^([0-9a-f]{64}|[0-9a-f]{96})$"
+        },
+        "min_tcb": {
+          "description": "The minimum TCB by component: an integer SVN, or for TDX's tee_tcb_svn lowercase hex compared byte by byte.",
+          "type": "object",
+          "additionalProperties": {
+            "oneOf": [
+              {
+                "type": "integer",
+                "minimum": 0
+              },
+              {
+                "type": "string",
+                "pattern": "^[0-9a-f]+$"
+              }
+            ]
+          }
+        },
+        "vendor_roots": {
+          "description": "The roots a report's certificate chain may end at, by platform, as the SHA-256 of the root certificate's DER. A notified body can hold the same roots itself (histor verify --vendor-roots).",
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "platform",
+              "sha256"
+            ],
+            "properties": {
+              "platform": {
+                "enum": [
+                  "sev-snp",
+                  "tdx",
+                  "mock"
+                ]
+              },
+              "sha256": {
+                "$ref": "#/$defs/sha256_digest"
+              },
+              "name": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "notified_body_tests": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "allowed"
+      ],
+      "properties": {
+        "allowed": {
+          "description": "Whether the plan pre-authorises notified-body tests within these limits. true: a proposal is approved by a signed approval entry from each approver. false: a proposal is approved only by an amendment that adopts it (adopted).",
+          "type": "boolean"
+        },
+        "approvers": {
+          "description": "Who approves a notified-body test under the pre-authorisation: the regulator alone, or the regulator and the provider. The regulator is always one: the competent authority supervises the testing in its sandbox.",
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "regulator",
+              "provider"
+            ]
+          },
+          "contains": {
+            "const": "regulator"
+          }
+        },
+        "max_runs": {
+          "description": "The most runs the notified body may initiate under this plan version. They count against limits.max_runs as well: a notified-body run is a run.",
+          "type": "integer",
+          "minimum": 1
+        },
+        "test_types": {
+          "description": "The built-in test types a notified-body test may be. Left out: any of them. A proposed test's parameters are held to the same schema, and the same cross-checks, as the plan's own tests.",
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "accuracy_by_group",
+              "rate_by_group",
+              "robustness",
+              "determinism",
+              "decision_logging",
+              "adversarial_robustness",
+              "fail_safe"
+            ]
+          }
+        },
+        "datasets": {
+          "description": "The datasets, by id, a notified-body test may use. Left out: any dataset the plan declares. A notified-body test never brings data of its own: new data is an amendment, committed through the test lab.",
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        },
+        "adopted": {
+          "description": "Proposals this plan version adopts by amendment: the proposal's ledger seq, and the id of the test in tests that is the proposed test, unchanged. The amendment is signed by both parties like any other, and the verifier holds it to the same signatures as the original plan.",
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "proposal",
+              "test_id"
+            ],
+            "properties": {
+              "proposal": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "test_id": {
+                "$ref": "#/$defs/test_id"
+              }
+            }
+          }
+        }
+      },
+      "if": {
+        "properties": {
+          "allowed": {
+            "const": true
+          }
+        },
+        "required": [
+          "allowed"
+        ]
+      },
+      "then": {
+        "required": [
+          "approvers",
+          "max_runs"
+        ]
+      }
+    }
+  }
+}
