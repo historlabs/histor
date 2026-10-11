@@ -38,6 +38,95 @@
     "artifacts": {
       "$ref": "#/$defs/artifacts"
     },
+    "api_contract": {
+      "description": "The provider's API contract, which it submits with its model configuration before the tests are written: what the model is given, the fields it answers with, and what it logs. A test reads typed answers (x-reads on each test type and limit; see answers), each bound to a contract field of its type; the console offers only tests the contract can answer, and a plan whose tests it cannot answer is not sent for signing.",
+      "type": "object",
+      "required": [
+        "returns"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "input": {
+          "description": "What the model is given, as the provider says it.",
+          "type": "string",
+          "minLength": 1
+        },
+        "returns": {
+          "description": "Each field of the model's answer and its type.",
+          "type": "object",
+          "minProperties": 1,
+          "propertyNames": {
+            "pattern": "^[a-z][a-z0-9_]{0,63}$"
+          },
+          "additionalProperties": {
+            "type": "object",
+            "required": [
+              "type"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "type": {
+                "enum": [
+                  "number",
+                  "boolean",
+                  "string"
+                ]
+              },
+              "minimum": {
+                "type": "number"
+              },
+              "maximum": {
+                "type": "number"
+              }
+            }
+          }
+        },
+        "log_fields": {
+          "description": "The fields each decision log line carries.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        }
+      }
+    },
+    "answers": {
+      "description": "Which field of the provider's API contract each answer the tests read comes from, set by the authority. The tests read three typed answers: age (a number of years, 0 to 120), is_adult (a boolean) and confidence (a number from 0 to 1); x-reads on each test type and limit says which. Without an entry, an answer comes from the contract field of the same name. The catalog is histor/plan/catalog.py.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "age": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]{0,63}$"
+        },
+        "is_adult": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]{0,63}$"
+        },
+        "confidence": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]{0,63}$"
+        }
+      }
+    },
+    "group_values": {
+      "description": "The values each group dimension takes, as the competent authority and the test lab set them when drafting the plan: the groups the system is tested across. A dimension is a group attribute a dataset carries. The test lab labels its items with these values; a run that scores a value not named here, or scores no items for one that is, is flagged by the scorer in the result's notes and by the verifier (sample_sizes). A dimension not listed takes its values from the labels.",
+      "type": "object",
+      "propertyNames": {
+        "minLength": 1
+      },
+      "additionalProperties": {
+        "type": "array",
+        "minItems": 1,
+        "items": {
+          "type": "string",
+          "minLength": 1
+        },
+        "uniqueItems": true
+      }
+    },
     "datasets": {
       "description": "Every dataset the plan admits. A run may only use datasets listed here, matched against their commitment.",
       "type": "array",
@@ -176,7 +265,7 @@
       }
     },
     "centre": {
-      "description": "The HPC centre and partition the runs execute at, as the centre described them before the plan was signed. Results hold for the hardware they were produced on, so the plan pins it here. name, cpu_arch, runtime and personal_data_accepted are required: without them nobody can tell whether the provider's image can run there, or whether the data may go there at all. partition, accelerator and accelerator_stack are optional, because a CPU-only partition has no accelerator and a centre may assign the partition itself.",
+      "description": "The HPC centre and partition the runs execute at, as the centre described them before the plan was signed. Results hold for the hardware they were produced on, so the plan pins it here. name, cpu_arch, runtime and personal_data_accepted are required: without them nobody can tell whether the provider's image can run there, or whether the data may go there at all. partition, accelerator, accelerator_stack and network_isolation are optional, because a CPU-only partition has no accelerator and a centre may assign the partition itself. account, qos, time_limit, gres and prelude are optional too: what the centre's Slurm requires of every job, written into the job script, whose digest the ledger keeps, so the record shows them. Left out, the job script does not carry them.",
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -221,6 +310,14 @@
             "singularity-pro"
           ]
         },
+        "network_isolation": {
+          "description": "How the job keeps the model off the network. 'namespace' (the default): the model runs in a network namespace that holds loopback alone, and keys are released only if the job measured exactly that. 'syscall_filter': for nodes that make no network namespaces (MareNostrum 5's ACC nodes, for example), every component runs under the job's seccomp filter (sandbox-net confine), which lets it open no connection but to what it serves itself on loopback; keys are released only if every connection the probe tried was refused by the filter. The filter shares the node's network stack with the model, so the plan states which one it relies on.",
+          "enum": [
+            "namespace",
+            "syscall_filter"
+          ],
+          "default": "namespace"
+        },
         "personal_data_accepted": {
           "description": "The most sensitive personal data the centre allows on the system the job runs on, as the centre stated it: 'none', 'personal' (ordinary personal data, but not GDPR Art. 9 special-category data) or 'special_category'. The plan loader refuses a plan whose datasets or personal_data declare more than this. Some centres accept no special-category data at all.",
           "enum": [
@@ -235,6 +332,35 @@
           "minimum": 60,
           "maximum": 3600,
           "default": 300
+        },
+        "account": {
+          "description": "The Slurm account the job is charged to (#SBATCH --account), for example the project's group at MareNostrum 5, where it is mandatory.",
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:+-]*$"
+        },
+        "qos": {
+          "description": "The Slurm quality of service the job is submitted under (#SBATCH --qos), for example 'acc_debug'. Mandatory at some centres.",
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:+-]*$"
+        },
+        "time_limit": {
+          "description": "The job's wall-time limit (#SBATCH --time), in a form Slurm reads: minutes, MM:SS, HH:MM:SS, D-HH, D-HH:MM or D-HH:MM:SS. Should not exceed limits.max_run_duration_minutes.",
+          "type": "string",
+          "pattern": "^([0-9]+-)?[0-9]+(:[0-9]{2}){0,2}$"
+        },
+        "gres": {
+          "description": "Generic resources the job requests (#SBATCH --gres), for example 'gpu:4'. Left out for a CPU-only job.",
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:,=+-]*$"
+        },
+        "prelude": {
+          "description": "Shell lines the job runs before anything else, and the control plane before each runtime command on the login node, for example 'module load singularity/4.1.5' where the runtime is a module. In the job script, so under its digest. One command per line; a line that fails stops the job.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^[^\\n\\r]*$"
+          }
         }
       }
     },
@@ -459,12 +585,13 @@
           "$ref": "#/$defs/sha256_digest"
         },
         "owner_role": {
-          "description": "Role that holds the data key. Defaults to test_lab for independent_heldout.",
+          "description": "Role that holds the data key. Defaults to test_lab for independent_heldout. operator: the sandbox operator generated the set itself (synthetic data), and its runner commits it.",
           "enum": [
             "regulator",
             "dpa",
             "test_lab",
-            "provider"
+            "provider",
+            "operator"
           ]
         },
         "groups": {
@@ -842,6 +969,9 @@
     "test_accuracy_by_group": {
       "title": "accuracy_by_group",
       "description": "Error metrics over a dataset, disaggregated by group. Annex IV point 3 requires accuracy levels for the specific persons or groups of persons the system is intended for, which is why the disaggregation is the test rather than an extra.",
+      "x-reads": [
+        "age"
+      ],
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -879,7 +1009,13 @@
               "mape"
             ]
           },
-          "uniqueItems": true
+          "uniqueItems": true,
+          "x-units": {
+            "mae": "years",
+            "rmse": "years",
+            "max_error": "years",
+            "mape": "fraction"
+          }
         },
         "groups": {
           "type": "array",
@@ -900,11 +1036,14 @@
           "additionalProperties": false,
           "properties": {
             "max_per_group": {
-              "type": "number"
+              "type": "number",
+              "x-unit": "metric",
+              "minimum": 0
             },
             "max_gap_between_groups": {
               "type": "number",
-              "minimum": 0
+              "minimum": 0,
+              "x-unit": "metric"
             }
           }
         }
@@ -913,6 +1052,9 @@
     "test_rate_by_group": {
       "title": "rate_by_group",
       "description": "A binary-outcome rate over a dataset, disaggregated by group. false_adult_rate is the share of items whose true age is under the threshold that the system called adult — the harm this demo exists to measure.",
+      "x-reads": [
+        "is_adult"
+      ],
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -969,17 +1111,20 @@
             "max_per_group": {
               "type": "number",
               "minimum": 0,
-              "maximum": 1
+              "maximum": 1,
+              "x-unit": "fraction"
             },
             "max_gap_between_groups": {
               "type": "number",
               "minimum": 0,
-              "maximum": 1
+              "maximum": 1,
+              "x-unit": "fraction"
             },
             "max_overall": {
               "type": "number",
               "minimum": 0,
-              "maximum": 1
+              "maximum": 1,
+              "x-unit": "fraction"
             }
           }
         }
@@ -988,6 +1133,9 @@
     "test_robustness": {
       "title": "robustness",
       "description": "Behaviour under input perturbation. Perturbations are functions of a bounded parameter rather than fixed presets, so the harness can sweep severity and report a degradation curve instead of a single before-and-after pair.",
+      "x-reads": [
+        "is_adult"
+      ],
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -1031,11 +1179,16 @@
             "max_false_adult_rate_increase": {
               "type": "number",
               "minimum": 0,
-              "maximum": 1
+              "maximum": 1,
+              "x-unit": "fraction"
             },
             "max_mae_increase": {
               "type": "number",
-              "minimum": 0
+              "minimum": 0,
+              "x-unit": "years",
+              "x-reads": [
+                "age"
+              ]
             }
           }
         }
@@ -1095,6 +1248,9 @@
     "test_adversarial_robustness": {
       "title": "adversarial robustness",
       "description": "Black-box, query-budgeted attacks on true minors from the test's dataset: how often an attacker who can only show the camera an image and read the answer turns a refused minor into a served one. The model is behind the relay, so no attack uses gradients; every query goes through the relay and is logged and counted. The headline rate is over minors the system refused on the clean image, counting an item as broken if any planned attack broke it within its budget. This is not a penetration test of the system under test.",
+      "x-reads": [
+        "is_adult"
+      ],
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -1160,19 +1316,22 @@
               "description": "Upper limit on the share of refused minors any planned attack turned into is_adult=true.",
               "type": "number",
               "minimum": 0,
-              "maximum": 1
+              "maximum": 1,
+              "x-unit": "fraction"
             },
             "max_attack_success_rate_ci_high": {
               "description": "Upper limit on the upper bound of that rate's interval: a stricter plan can require the evidence to rule out a rate, not merely not observe it.",
               "type": "number",
               "minimum": 0,
-              "maximum": 1
+              "maximum": 1,
+              "x-unit": "fraction"
             },
             "max_attack_success_rate_per_group": {
               "description": "Upper limit on the attack success rate in any group that met the plan's minimum sample.",
               "type": "number",
               "minimum": 0,
-              "maximum": 1
+              "maximum": 1,
+              "x-unit": "fraction"
             }
           }
         }
@@ -1192,7 +1351,12 @@
             "random_noise",
             "square_search",
             "occlusion"
-          ]
+          ],
+          "x-reads": {
+            "square_search": [
+              "age"
+            ]
+          }
         },
         "queries_per_item": {
           "description": "Query budget per item for this attack. The attack stops at the first is_adult=true.",
@@ -1278,6 +1442,10 @@
     "test_fail_safe": {
       "title": "fail-safe",
       "description": "Synthetic out-of-scope inputs (a covered lens, an empty scene, noise, a printed card, a minor's frame squashed or shrunk) sent through the relay among in-scope decoys. The system under test should fail closed: not approve the sale, and not claim confidence it cannot have. Tests the system's behaviour at the edge of its intended purpose; it is not a penetration test.",
+      "x-reads": [
+        "is_adult",
+        "confidence"
+      ],
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -1335,19 +1503,25 @@
               "description": "Upper limit on the share of out-of-scope inputs answered is_adult=true.",
               "type": "number",
               "minimum": 0,
-              "maximum": 1
+              "maximum": 1,
+              "x-unit": "fraction"
             },
             "max_approval_rate_per_kind": {
               "description": "The same limit, for the worst kind that met the plan's minimum sample.",
               "type": "number",
               "minimum": 0,
-              "maximum": 1
+              "maximum": 1,
+              "x-unit": "fraction"
             },
             "max_mean_confidence": {
               "description": "Upper limit on the mean confidence reported for out-of-scope inputs.",
               "type": "number",
               "minimum": 0,
-              "maximum": 1
+              "maximum": 1,
+              "x-unit": "fraction",
+              "x-reads": [
+                "confidence"
+              ]
             }
           }
         }
@@ -1422,6 +1596,9 @@
     "test_determinism": {
       "title": "determinism",
       "description": "Repeat a fraction of items within the same run. The harness always sends temperature 0 and a fixed seed, so a flipped decision is a property of the system under test, not of the request.",
+      "x-reads": [
+        "is_adult"
+      ],
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -1459,11 +1636,16 @@
             "max_is_adult_flip_rate": {
               "type": "number",
               "minimum": 0,
-              "maximum": 1
+              "maximum": 1,
+              "x-unit": "fraction"
             },
             "max_age_stdev": {
               "type": "number",
-              "minimum": 0
+              "minimum": 0,
+              "x-unit": "years",
+              "x-reads": [
+                "age"
+              ]
             }
           }
         }
@@ -1472,6 +1654,7 @@
     "test_decision_logging": {
       "title": "decision_logging",
       "description": "Art. 12: does the system actually log its decisions, and can every request the relay issued be found in that log? Retention is stated here because Art. 19(1) puts a floor under it and the exit report has to show the floor was respected.",
+      "x-reads": [],
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -1514,11 +1697,13 @@
             "min_log_coverage": {
               "type": "number",
               "minimum": 0,
-              "maximum": 1
+              "maximum": 1,
+              "x-unit": "fraction"
             },
             "max_unmatched_request_ids": {
               "type": "integer",
-              "minimum": 0
+              "minimum": 0,
+              "x-unit": "count"
             }
           }
         }
@@ -1548,6 +1733,10 @@
         },
         "data_processor": {
           "description": "Processes the test data on the data holder's behalf. May view the items of the datasets that name them in `processors`; never results, never model outputs.",
+          "$ref": "#/$defs/role_members"
+        },
+        "operator": {
+          "description": "The sandbox operator's runner, which carries out the runs the parties request and commits what is the sandbox's own (the relay and harness images, a dataset the operator holds). Nobody signs in as it.",
           "$ref": "#/$defs/role_members"
         },
         "notified_body": {

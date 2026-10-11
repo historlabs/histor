@@ -20,7 +20,7 @@
         parties' identity providers: the bundle shows that the sandbox signed
         it, not who agreed to it
   warn  report_signature: was the exit report signed by the regulator, through their own identity provider?
-        report sha256:eb92d315df53… is signed through the development IdP, which
+        report sha256:d5a7cd65b542… is signed through the development IdP, which
         issues a token for anyone: the signature identifies nobody
   ok    artifact_digests: do the artifacts in every run match the pins of the plan it cites?
         2 run(s) match the plan's pins
@@ -62,6 +62,9 @@
         writes can carry it)
   ok    i18n_catalogues: is the catalogue each translated rendering of the report was made with in the bundle, as the ledger records it?
         the report was rendered in English only: no catalogue to carry
+  ok    software_release: was the histor that wrote this record a release you hold?
+        histor 0.1.1 at 2344c1ce43e7: a release you hold, by version and commit
+        (as the operator's software states it)
   ok    report_renderings: is the exit report rendered in every language the plan names, each rendering named by hash in the authentic report?
         the plan names no languages: one report, in English
   ok    anchor_plan_digest: is every plan in the bundle one whose digest you hold?
@@ -78,18 +81,18 @@
         replaced them all consistently. Pass them from outside, with --anchors
         or the --expect-* options.
   ok    bundle_digest: does the bundle match the digest in its own manifest?
-        sha256:86b3110fde8f24e9de897c200c96b8f60edb6b190e08fc5c7ea1e610a4a65a45
+        sha256:089df4b52795541c4c23442671ee7131470fbc489f30e0c1dd35f0b717868988
 
-VERIFIED — 21 checks passed, 7 warning(s)
+VERIFIED — 22 checks passed, 7 warning(s)
 
-Anchors given from outside: plan_digest, sandbox_id, signing_keys
+Anchors given from outside: plan_digest, sandbox_id, signing_keys, releases
 Anchors read from the bundle: tsa_root, idp_keys, policy_digest, harness_digest, audience, ledger_head
 
 What this bundle does NOT establish:
   - plan_signatures: the plan was signed with keys the sandbox holds, not
     through the parties' identity providers: the bundle shows that the
     sandbox signed it, not who agreed to it
-  - report_signature: report sha256:eb92d315df53… is signed through the
+  - report_signature: report sha256:d5a7cd65b542… is signed through the
     development IdP, which issues a token for anyone: the signature
     identifies nobody
   - isolation: NO ISOLATION WAS ENFORCED. Every run in this bundle was

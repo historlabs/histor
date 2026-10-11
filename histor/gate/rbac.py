@@ -28,6 +28,11 @@ ACTIONS = frozenset(
         # Art. 57(5), draft implementing act Art. 5(4): a new version of the plan in
         # force, already signed by both parties, takes its place.
         "amend_plan",
+        # Before anything is in force: a change to the draft plan, by the party that
+        # sets that part of it (histor/plan/drafting.py OWNERS), and the regulator
+        # sending a draft for both parties to sign.
+        "draft_plan",
+        "send_plan",
         "configure_model",
         "commit_model",
         "commit_dataset",
@@ -80,9 +85,10 @@ RECORDS = frozenset(
     }
 )
 
-# What can happen before both parties have signed: the signing itself, and the
-# provider saying which model the plan should pin. Nothing that runs anything.
-BEFORE_SIGNATURE = frozenset({"sign_plan", "configure_model"})
+# What can happen before both parties have signed: the signing itself, the provider
+# saying which model the plan should pin, and drafting the plan. Nothing that runs
+# anything.
+BEFORE_SIGNATURE = frozenset({"sign_plan", "configure_model", "draft_plan", "send_plan"})
 
 # Who may do what. The notified body reads, and acts only on its own tests (Annex VII
 # point 4.4): it proposes one, and runs it once the plan's approvers have approved it.
@@ -95,6 +101,8 @@ ROLE_ACTIONS: dict[str, frozenset[str]] = {
         {
             "sign_plan",
             "amend_plan",
+            "draft_plan",
+            "send_plan",
             "request_run",
             "halt_run",
             "suspend",
@@ -121,6 +129,8 @@ ROLE_ACTIONS: dict[str, frozenset[str]] = {
         {
             "sign_plan",
             "amend_plan",
+            # Its configuration and API contract, into the draft.
+            "draft_plan",
             "configure_model",
             "commit_model",
             "request_run",
@@ -132,14 +142,24 @@ ROLE_ACTIONS: dict[str, frozenset[str]] = {
             "decline_test",
         }
     ),
-    # The test lab holds the held-out set: it commits it and may look at it.
-    "test_lab": frozenset({"commit_dataset", "view_test_data", "report_incident"}),
+    # The test lab holds the held-out set: it commits it and may look at it. In the
+    # draft it sets the group values and each test's data, groups and statistics.
+    "test_lab": frozenset({"commit_dataset", "view_test_data", "report_incident", "draft_plan"}),
     # Processes the test data on the data holder's behalf (GDPR Art. 28): may look at
     # it, never at what the model made of it.
     "data_processor": frozenset({"view_test_data"}),
     "notified_body": frozenset({"propose_test", "run_nb_test"}),
+    # The sandbox operator's runner (`histor runner`), which runs what the parties
+    # requested. It commits what is the sandbox's own and nothing of anyone else's: the
+    # relay and harness images, and a dataset the plan says the operator holds (a
+    # synthetic set it generated). Nobody signs in as it: it is not in ROLES, so no IdP
+    # can vouch for it.
+    "operator": frozenset({"commit_model", "commit_dataset"}),
     "verifier": frozenset(),
 }
+
+# What the operator may commit with commit_model: the sandbox's own images.
+OPERATOR_ARTIFACTS = frozenset({"relay_image_digest", "harness_image_digest"})
 
 READ_SCOPES = frozenset(
     {
@@ -184,10 +204,12 @@ ROLE_SCOPES: dict[str, frozenset[str]] = {
     # processor who could read which items the model got wrong would be one message
     # away from telling the provider.
     "data_processor": frozenset({"plan", "model_card", "progress"}),
+    "operator": frozenset(),
     "verifier": frozenset(),
 }
 
-ROLES = tuple(r for r in ROLE_ACTIONS if r != "verifier")
+# The roles people sign in as. The verifier and the operator are processes.
+ROLES = tuple(r for r in ROLE_ACTIONS if r not in {"verifier", "operator"})
 
 # The parties whose signatures make a plan binding.
 SIGNING_PARTIES = ("provider", "regulator")

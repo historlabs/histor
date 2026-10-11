@@ -26,11 +26,12 @@ from __future__ import annotations
 
 import copy
 import hashlib
-import json
 from typing import Any
 
 from jsonschema import Draft202012Validator
 from jsonschema import exceptions as js_exceptions
+
+from histor.crypto.canonical import canonical_json_utf8
 
 # The legal basis a proposal records, whatever its justification says.
 LEGAL_BASIS = "AI Act Annex VII, point 4.4"
@@ -90,12 +91,6 @@ def adopted(plan: dict[str, Any], proposal_seq: int) -> str | None:
     return None
 
 
-def canonical(value: Any) -> bytes:
-    return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode(
-        "utf-8"
-    )
-
-
 def proposal_digest(
     sandbox_id: str, plan_digest: str, test: Any, justification: str, proposed_by: str
 ) -> str:
@@ -111,7 +106,7 @@ def proposal_digest(
         "justification": justification,
         "proposed_by": proposed_by,
     }
-    return "sha256:" + hashlib.sha256(canonical(material)).hexdigest()
+    return "sha256:" + hashlib.sha256(canonical_json_utf8(material)).hexdigest()
 
 
 def digest_of(body: dict[str, Any], sandbox_id: str) -> str:

@@ -731,6 +731,11 @@ measurements, and no threshold the test type does not define MAY appear.
 (`insufficient_sample`).
 *Check:* `sample_sizes` (warn).
 
+**B-191.** Where the plan a run cites names a dimension's values (`group_values`), a
+verifier MUST warn when a result scores a group of that dimension that the plan does
+not name, or names a value the result has no group for.
+*Check:* `sample_sizes` (warn).
+
 **B-114.** A predicate with `outcome` `halted` MUST carry `halt_reason`.
 *Check:* none (the predicate schema requires it; the verifier does not validate the
 schema).
@@ -832,7 +837,10 @@ evidence names, and the plan MUST pin that agreement with the same `centre` and
 
 **B-130.** A verifier MUST NOT pass a sound `hpc_centre` run: it MUST warn, naming who
 signed. It MUST report every `key_release_refused` and `weights_key_release_refused`
-entry as an incident.
+entry as an incident. Where the agreement the run was authorised under marks itself a
+placeholder for a centre that executed none (the word `placeholder` in its `id` or its
+`note`), the verifier MUST NOT report it as the centre's confidentiality undertaking,
+and MUST say that nothing covered root on the compute node.
 *Check:* `isolation` (warn).
 
 **B-131.** An `hpc_centre` arm without `signed_by`, in a ledger with no `key_released`
@@ -911,8 +919,8 @@ A verifier accepts these anchors, as options or in one anchors file: `plan_diges
 `centre_keys` (option `--centre-keys`: a JWKS whose `kid` is a centre's name, a JSON
 object of name to PEM, or one PEM for any centre) and `vendor_roots` (option
 `--vendor-roots`, repeatable: PEM files of self-signed root certificates, from the TEE
-vendors; section 26). "Anchored" in this document means at least one of them was
-given.
+vendors; section 26) and `releases` (option `--release`, repeatable: histor release
+files, section 28). "Anchored" in this document means at least one of them was given.
 
 **B-138.** A verifier MUST NOT fall back to the bundle's own value for an anchor it
 was given but cannot read. An anchor that is missing, malformed, empty, or given under
@@ -923,7 +931,8 @@ an unknown name in an anchors file MUST end the run with exit code 2.
 bundle, and MUST warn when any came from the bundle. `ledger_head` and `checkpoints`
 count as one anchor (either anchors the ledger's end); `centre_keys` counts only for a
 bundle holding isolation evidence a centre signed; `vendor_roots` only for a bundle
-holding TEE evidence or a plan that pins a `tee_policy`.
+holding TEE evidence or a plan that pins a `tee_policy`; `releases` only for a bundle
+whose ledger records the software that wrote it (section 28).
 *Check:* `anchors` (warn).
 
 **B-140.** When the verifier holds TSA roots, every entry's timestamp MUST be of kind
@@ -938,8 +947,8 @@ version was superseded (0.1: 2026-09-27T00:00:00Z; 0.2: 2026-09-28T00:00:00Z).
 Anchors that bind other requirements: B-25 (`sandbox_id`), B-66 and B-83
 (`idp_keys`), B-81 (`audience`), B-90, B-93 and B-95 (`signing_keys`), B-106 to B-108,
 B-152 (`ledger_head`), B-153 to B-156 (`checkpoints`), B-157 and B-158
-(`centre_keys`), B-161 (`tsa_root`), B-176 (`vendor_roots`), and B-158 and B-163 (any
-anchor).
+(`centre_keys`), B-161 (`tsa_root`), B-176 (`vendor_roots`), B-193 (`releases`), and
+B-158 and B-163 (any anchor).
 
 ## 17. Verdict and exit codes
 
@@ -1000,7 +1009,8 @@ AFS `test_adversarial_and_fail_safe.py`, SP `test_sample_participation.py`,
 E2E `test_demo_end_to_end.py`,
 DC `test_dataset_commitment.py`, RR `test_verifier_residual_risks.py`,
 VI `test_verifier_i18n.py`, VR `test_verifier_renderings.py`,
-TEE `test_tee_attestation.py`, TR `test_tee_release.py`.
+TEE `test_tee_attestation.py`, TR `test_tee_release.py`,
+NB `test_verifier_nb_tests.py`, GV `test_group_values.py`.
 In the engine's suite, `tests/test_check_registry.py` holds this table to the code: every test it names
 exists, and every requirement has a row.
 
@@ -1139,7 +1149,7 @@ exists, and every requirement has a row.
 | B-127 | `isolation` | HPC `test_a_run_at_a_centre_without_a_key_release_fails`<br>HPC `test_a_release_to_a_job_running_another_sif_fails`<br>HPC `test_a_probe_that_reached_something_fails`<br>HPC `test_a_namespace_with_more_than_loopback_fails`<br>HPC `test_a_release_to_a_job_other_than_the_one_submitted_fails`<br>HPC `test_a_run_refused_its_keys_that_halted_is_not_a_failure` |
 | B-128 | `isolation` | PW `TestVerifier::test_a_run_without_a_weights_release_fails`<br>PW `TestVerifier::test_weights_released_to_another_key_than_the_data_fails`<br>PW `TestVerifier::test_a_receipt_the_provider_did_not_sign_fails`<br>PW `TestVerifier::test_more_runs_than_the_plan_allows_fails` |
 | B-129 | `isolation` | SLURM `test_a_run_started_with_no_undertaking_fails`<br>SLURM `test_a_run_authorised_at_one_centre_with_evidence_from_another_fails`<br>SLURM `test_an_undertaking_the_plan_does_not_pin_fails` |
-| B-130 | `isolation` | HPC `test_a_sound_centre_signed_claim_warns_and_names_the_centre`<br>HPC `test_a_sound_operator_signed_claim_warns_and_names_the_operator`<br>HPC `test_a_refused_release_is_reported_as_an_incident` |
+| B-130 | `isolation` | HPC `test_a_sound_centre_signed_claim_warns_and_names_the_centre`<br>HPC `test_a_sound_operator_signed_claim_warns_and_names_the_operator`<br>HPC `test_a_refused_release_is_reported_as_an_incident`<br>HPC `test_an_executed_undertaking_is_reported_as_the_contract_that_covered_root`<br>HPC `test_a_placeholder_is_reported_as_a_placeholder_not_as_an_undertaking` |
 | B-131 | `isolation` | HPC `test_a_legacy_claim_still_verifies_and_says_what_it_lacks` |
 | B-132 | `isolation` | **none** |
 | B-133 | `run_logs` | LV `TestRunLogs::test_an_altered_log_fails`<br>LV `TestRunLogs::test_logs_that_match_their_digests_pass`<br>E2E `test_the_run_logs_travel_and_match` |
@@ -1200,6 +1210,9 @@ exists, and every requirement has a row.
 | B-188 | `nb_tests` | NB `TestAnUnauthorisedRun::test_more_runs_than_the_plan_allows` |
 | B-189 | `nb_tests` | NB `TestAnUnauthorisedRun::test_an_unmarked_run_of_the_proposed_test` |
 | B-190 | `nb_tests` | NB `TestInTheVerdict::test_histor_verify_runs_the_check_and_fails_an_unauthorised_run`<br>NB `TestInTheVerdict::test_an_authorised_run_does_not_fail_it`<br>NB `TestInTheVerdict::test_not_emitted_for_a_participation_without_notified_body_tests` |
+| B-191 | `sample_sizes` | GV `TestTheVerifier::test_a_stray_and_a_missing_group_warn`<br>GV `TestTheVerifier::test_a_plan_without_values_says_nothing_new` |
+| B-192 | `software_release` | SW `TestTheRecord::test_the_report_records_the_software_that_wrote_it`<br>SW `TestTheCheck::test_no_commit_warns`<br>SW `TestTheCheck::test_uncommitted_changes_warn` |
+| B-193 | `software_release` | SW `TestTheCheck::test_a_release_you_hold_passes`<br>SW `TestTheCheck::test_a_release_version_at_another_commit_fails`<br>SW `TestTheCheck::test_an_unreleased_commit_warns`<br>SW `TestTheCheck::test_without_releases_it_passes_and_says_so`<br>SW `TestTheCli::test_release_files_are_an_anchor` |
 
 ### 19.2 Gaps
 
@@ -1213,7 +1226,9 @@ B-1, B-2, B-9, B-10, B-11, B-15, B-16, B-19, B-27, B-31, B-32, B-33, B-35, B-40,
 
 Revision 2 closed B-22, B-57 and B-119 (each now enforced and tested) and gave B-14,
 B-43 and B-63 tests with their changed rules. Revision 3 adds B-173 to B-190, each
-tested; B-182 binds the key broker and the releasers, and its tests are theirs.
+tested; B-182 binds the key broker and the releasers, and its tests are theirs. B-191
+holds the groups scored to the plan's group values, tested. B-192 and B-193 record and
+check which histor wrote the record, tested.
 
 ### 19.3 Where the code and the documentation differ (informative)
 
@@ -1586,6 +1601,30 @@ version's signatures are held to section 8 like any other (`plan_signatures`).
 attestation carries `initiated_by`; it is not emitted otherwise.
 *Check:* `nb_tests` (emitted as stated).
 
+## 28. The software that wrote the record
+
+A version names a release, but every commit between two releases calls itself by the
+earlier one's version. So a producer records which histor wrote the report and
+exported the bundle as a version and a commit, and a reader checks the pair against
+the releases it holds. A release file is published with each signed release
+(`histor-<version>.release.json`: `{"name": "histor", "version", "commit"}`, where
+`commit` is the source commit the release was cut from).
+
+This is the operator's software speaking about itself, inside a chained and stamped
+ledger. It shows which code the operator says ran, and whether a release names that
+code; it does not show that the code ran.
+
+**B-192.** A producer SHOULD record `software` in every `report_generated` entry it
+writes: an object with `name` (`histor`), `version`, `commit` (40 lower-case hex) when
+known, and `dirty: true` when it ran from a checkout with uncommitted changes. A
+verifier MUST warn when a record names no commit or a dirty checkout.
+*Check:* `software_release` (warn).
+
+**B-193.** Given releases, a verifier MUST fail when a recorded `version` is one of
+them at another `commit`, and MUST warn when a recorded version and commit is not one
+of them. A recorded `name` other than `histor` MUST fail.
+*Check:* `software_release` (fail, warn).
+
 ## Appendix A. Ledger entry types
 
 The types a ledger writer accepts (`ledger/store.py`, `ENTRY_TYPES`). A verifier reads
@@ -1599,6 +1638,7 @@ the ones marked with the checks that read them.
 | `harness_key_provisioned`, `scorer_key_provisioned` | `public_key` of the harness's or scorer's key | `signing_keys` |
 | `timestamp_authority` | `name`, `root_pem` of the RFC 3161 authority | (copied into `public-keys.json`) |
 | `model_configured`, `model_preflight` | The provider's model and its bring-up | — |
+| `plan_drafted`, `plan_sent` | Before any version is in force: a change to the plan as drafted in the console (`plan`, `plan_digest`, `previous_digest`, `version`, `parts`, `role`, `by`), and the regulator sending a draft for both parties to sign (`plan_digest`, `version`) | — |
 | `artifact_committed` | An artifact digest committed | — |
 | `dataset_committed` | `dataset_id`, `commitment` | `dataset_commitments` (against the run and the plan it cites) |
 | `gate_decision` | `action`, `allow`, `role`, `subject`, `reasons`, `plan_digest` | `run_numbers`, `deletion`, `completeness` (`action` `exit`, `allow` true), `nb_tests` (`propose_test`, `approve_test`, `run_nb_test`) |
@@ -1609,7 +1649,7 @@ the ones marked with the checks that read them.
 | `suspended`, `resumed` | Art. 57(11) | — |
 | `image_converted`, `hpc_centre_key`, `hpc_operator_key`, `job_submitted`, `key_released`, `key_release_refused`, `weights_key_released`, `weights_key_release_refused` | HPC centre evidence (sections 12 and 22); `key_released` and `weights_key_released` also record TEE evidence, at a centre or not (section 26) | `isolation`; `key_released`, `key_release_refused` and `weights_key_released` also `tee_attestation` |
 | `keys_destroyed` | `key_scopes`, `destroyed_at` | `deletion`, `completeness` |
-| `report_generated` | `report_sha256`, `bundle_digest`, `bundle_version`, `report_file`, and with languages `languages`, `authentic_language`, `renderings` (section 25) | `completeness`, `report_signature`, `bundle_format`, `i18n_catalogues`, `report_renderings` |
+| `report_generated` | `report_sha256`, `bundle_digest`, `bundle_version`, `report_file`, `software` (section 28), and with languages `languages`, `authentic_language`, `renderings` (section 25) | `completeness`, `report_signature`, `bundle_format`, `i18n_catalogues`, `report_renderings`, `software_release` |
 | `report_signature` | The regulator's IdP signature over `report_sha256`, and the `ledger_head` it commits to (section 20) | `report_signature`, `completeness`, `anchor_idp_keys` |
 | `bundle_verified`, `findings_recorded`, `serious_incident`, `publication_consent`, `report_delivered`, `ai_office_notified` | The authority's acts and the participant's consent | — |
 

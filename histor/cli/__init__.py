@@ -99,6 +99,11 @@ COMMANDS: tuple[Command, ...] = (
         "histor.tools.bringup.bringup:main",
         "bring a model up alone, with no data, and say why if it won't",
     ),
+    Command(
+        ("model", "dry-run"),
+        "histor.tools.dryrun.cli:main",
+        "check the image, the weights and the API contract before any test data",
+    ),
     Command(("run", "demo"), "histor.demo.scripts.run_demo:main", "the demo, end to end on CPU"),
     Command(
         ("run", "hosted"),
@@ -114,6 +119,21 @@ COMMANDS: tuple[Command, ...] = (
         ("run", "hpc"),
         "histor.demo.scripts.run_hpc:main",
         "a participation as a Slurm job at an HPC centre, over SSH",
+    ),
+    Command(
+        ("participation", "prepare"),
+        "histor.runner.cli:prepare_main",
+        "a participation's plan, unsigned, for the parties to sign in the console",
+    ),
+    Command(
+        ("runner", "serve"),
+        "histor.runner.cli:serve_main",
+        "carry out the runs the parties request in the console, at an HPC centre",
+    ),
+    Command(
+        ("run", "prebuild"),
+        "histor.demo.scripts.prebuild_hpc:main",
+        "build a model's SIF at an HPC centre from its registry, before any run",
     ),
     Command(
         ("run", "showcase"),
@@ -155,6 +175,8 @@ GROUPS: dict[tuple[str, ...], str] = {
     ("keys",): "development keys",
     ("model",): "the model under test",
     ("run",): "run a participation",
+    ("participation",): "a participation the parties sign through their own identity providers",
+    ("runner",): "the sandbox operator's runner, which carries out the runs requested",
     ("data",): "datasets",
     ("check",): "checks of a deployment",
 }

@@ -4,6 +4,8 @@ name: Release
 # this repository's word for it:
 #
 #   * the wheel and sdist, built from the tagged commit, and tested as installed;
+#   * the release file, histor-<version>.release.json: the version and the source
+#     commit it was cut from, which `histor verify --release` checks a bundle against;
 #   * SLSA build provenance for each (actions/attest-build-provenance);
 #   * a keyless Sigstore signature on each release file, whose certificate names this
 #     workflow at this tag, and SHA256SUMS;
@@ -62,6 +64,22 @@ jobs:
 
       - name: Build
         run: uv build --out-dir dist --no-cache
+
+      - name: The release file names this version
+        # release.json names the source commit this release was cut from: the commit a
+        # bundle's report_generated entry records, which `histor verify --release`
+        # checks. Signed and attested with the wheel and sdist.
+        run: |
+          python3 - <<'PY'
+          import json, os, re
+          record = json.load(open("release.json"))
+          assert record["name"] == "histor", record
+          assert record["version"] == os.environ["VERSION"], record
+          assert re.fullmatch(r"[0-9a-f]{40}", record["commit"]), record
+          PY
+          cp release.json "dist/histor-$VERSION.release.json"
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
 
       - name: Test the built wheel, installed
         run: |

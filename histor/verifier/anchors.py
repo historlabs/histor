@@ -33,6 +33,7 @@ One file can hold all of them, so a notified body keeps one per participation::
     checkpoints: [head-2026-10-01.json]  # head checkpoints you were given and kept
     centre_keys: centres.jwks     # each HPC centre's key, by its name, from the centre
     vendor_roots: [amd-ark-milan.pem]  # TEE vendors' root certificates, from the vendors
+    releases: [histor-0.2.0.release.json]  # histor releases, from their signed release files
 """
 
 from __future__ import annotations
@@ -59,11 +60,13 @@ NAMES = {
     "checkpoints": "the ledger head checkpoints",
     "centre_keys": "the HPC centres' keys",
     "vendor_roots": "the TEE vendors' root certificates",
+    "releases": "the histor releases",
 }
 # Anchors that only a bundle with that kind of evidence is checked against, and which
 # the verdict names as missing only then: the centres' keys, for evidence a centre
 # signed; the TEE vendors' roots, for hardware attestation evidence.
-SITUATIONAL = ("centre_keys", "vendor_roots")
+# The histor releases, for a ledger that records which histor wrote it.
+SITUATIONAL = ("centre_keys", "vendor_roots", "releases")
 # Anchors that stand in for one another when the verdict lists those not given: a
 # head you hold anchors the end of the ledger, whether as a head or a checkpoint.
 _ALTERNATIVES = {"checkpoints": "ledger_head"}
@@ -76,6 +79,7 @@ _HEAD = re.compile(r"^(\d+):(sha256:[0-9a-f]{64})$")
 SIGNING_KEY_IDS = ("control-plane", "harness", "scorer")
 
 _DIGEST = re.compile(r"^(sha256:)?([0-9a-f]{64})$")
+_COMMIT = re.compile(r"^[0-9a-f]{40}$")
 
 
 class AnchorError(ValueError):
@@ -104,6 +108,9 @@ class Anchors:
     # PEM root certificates a TEE report's chain may end at: AMD's ARK, Intel's SGX
     # root, or, for the mock platform, the mock root.
     vendor_roots: tuple[str, ...] = ()
+    # (version, commit) of each histor release: the source commit a signed release
+    # file names for that version (histor-<version>.release.json).
+    releases: tuple[tuple[str, str], ...] = ()
 
     def external(self) -> list[str]:
         """The anchors given, by name."""
@@ -317,6 +324,32 @@ def read_jwks(path: Path) -> tuple[dict[str, Any], ...]:
     return tuple(keys)
 
 
+def release(value: Any, where: str) -> tuple[str, str]:
+    """One release as (version, commit), from ``{"version": …, "commit": …}``."""
+    if not isinstance(value, dict):
+        raise AnchorError(f"{where}: a release is an object with version and commit")
+    version = str(value.get("version") or "").strip()
+    commit = str(value.get("commit") or "").strip().lower()
+    if not version or not _COMMIT.match(commit):
+        raise AnchorError(f"{where}: a release needs a version and a 40-hex commit")
+    if value.get("name", "histor") != "histor":
+        raise AnchorError(f"{where}: {value.get('name')!r} is not a histor release")
+    return version, commit
+
+
+def read_releases(path: Path) -> tuple[tuple[str, str], ...]:
+    """A release file as the release workflow publishes it (one release object), or a
+    JSON list of them."""
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as error:
+        raise AnchorError(f"releases {path}: {error}") from error
+    items = data if isinstance(data, list) else [data]
+    if not items:
+        raise AnchorError(f"releases {path}: no release")
+    return tuple(release(item, f"releases {path}") for item in items)
+
+
 def _listed(value: Any) -> list[Any]:
     return list(value) if isinstance(value, list) else [value]
 
@@ -352,6 +385,15 @@ def load(path: Path) -> Anchors:
     if data.get("control_plane_keys"):
         signing_keys += read_key_set(resolve(data["control_plane_keys"]))
     return Anchors(
+        releases=tuple(
+            pair
+            for item in _listed(data.get("releases") or [])
+            for pair in (
+                (release(item, f"{path}: releases"),)
+                if isinstance(item, dict)
+                else read_releases(resolve(item))
+            )
+        ),
         vendor_roots=tuple(
             pem
             for p in _listed(data.get("vendor_roots") or [])

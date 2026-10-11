@@ -1,16 +1,16 @@
 # Sandbox exit report — Point-of-sale age estimator
 
-Sandbox `demo-001` · provider Demo Provider · generated 2026-09-29 08:52 UTC
+Sandbox `demo-001` · provider Demo Provider · generated 2026-10-11 14:57 UTC
 
 > Written proof of the activities carried out in the AI regulatory sandbox (Art. 57(7)). Generated from the evidence ledger; every figure here is reproducible from the accompanying evidence bundle, which can be checked offline with `histor verify`.
 
-Generated from ledger head `sha256:89c4cf0a6b77cac0a6ec2ea14504b7db6d8c24d3b8ef017e36d7fcb0c9942ec4`.
-Evidence bundle digest at generation: `sha256:fff8a8b2304dd9a47414f67ee3674b2a7072588bce2f005aec82ac9d58e76c88` (the bundle gains this report's ledger entry after this line is written).
+Generated from ledger head `sha256:baa4bab472def282ce7dd6351c5364234962b5d64cf933c317e18f63993effc8`.
+Evidence bundle digest at generation: `sha256:aa2bbd2070073aef5eea4911fc6f7717048676adbb9e2b9ee0f383d5138aa6ea` (the bundle gains this report's ledger entry after this line is written).
 
-Written proof (draft implementing act Art. 6(2)): `sha256:c7abc9c64094b1106fd5861a52799389805739ec78f2441c21a27bac9874e40b`. Signing this report signs that hash too.
+Written proof (draft implementing act Art. 6(2)): `sha256:2777e0211938bf809e0a908f8048192492845af19efffd270d84a17e770177c0`. Signing this report signs that hash too.
 
 Not a declaration of conformity: this report does not have the status or legal effect of one under Art. 47 (draft implementing act Art. 6(4)).
-Participation completed 2026-09-29T08:52:00.824Z; this report is due to the participant by 2026-11-29T08:52:00.824000+00:00 (Art. 6(4), two months).
+Participation completed 2026-10-11T14:57:47.661Z; this report is due to the participant by 2026-12-11T14:57:47.661000+00:00 (Art. 6(4), two months).
 
 ## 1. General description of the AI system (Annex IV, 1)
 
@@ -33,7 +33,7 @@ Participation completed 2026-09-29T08:52:00.824Z; this report is due to the part
 ### `lab-heldout-v1` — independent heldout
 
 - **Commitment**: `sha256:bb2753c8260f1bf91e64c428bf103ca6e5e11ae089616010e5dfcd69e05b55e1`
-- **Committed**: seq 11, 2026-09-29T08:51:51.630Z
+- **Committed**: seq 11, 2026-10-11T14:57:33.850Z
 - **Held by**: test_lab
 - **Group attributes carried**: skin_tone_band, sex, age_band
 - **Special-category data**: yes — racial_or_ethnic_origin, biometric_data_for_unique_identification
@@ -96,7 +96,7 @@ Process indicators agreed in the plan (EUSAiR USF Annex XI, performance metrics)
 
 ## 5. Results, including accuracy by group (Annex IV, 3 and 4)
 
-### Run 1 — **FAIL** (2026-09-29T08:51:51Z to 2026-09-29T08:51:54Z)
+### Run 1 — **FAIL** (2026-10-11T14:57:34Z to 2026-10-11T14:57:39Z)
 
 **`accuracy_by_group`** — fail
 
@@ -139,7 +139,7 @@ Process indicators agreed in the plan (EUSAiR USF Annex XI, performance metrics)
 - threshold `min_log_coverage` gte 1.0: observed 1 - held
 - threshold `max_unmatched_request_ids` lte 0.0: observed 0 - held
 
-### Run 2 — **PASS** (2026-09-29T08:51:57Z to 2026-09-29T08:52:00Z)
+### Run 2 — **PASS** (2026-10-11T14:57:42Z to 2026-10-11T14:57:47Z)
 
 **`accuracy_by_group`** — pass
 
@@ -197,27 +197,29 @@ thing the participant tried that the plan did not permit.
 
 **Run 1** — `local_process`
 - **NO ISOLATION WAS ENFORCED.** This run executed as ordinary processes on one host. The results describe what the model answered and establish nothing about whether it could reach the data or the network. Not sandbox evidence.
-- Relay hash log: `sha256:3b4f17ec1900937355fa547ef4e4ba5dd3a3ce3daa19e98fe9e2683faa8698eb`
-- Model decision log: `sha256:48d6a97c7f2c7fd39a9dc50efeb461aacd06fc116b3c684ea7ec308e6d02595e`
+- Relay hash log: `sha256:cbeae89f40ae3b396c1e614c16080bcadd1d908d7ee111bc25cd4afb4142dd63`
+- Model decision log: `sha256:cc5bf0550d36f22b2f43c96c8226d8fd64c17d235f15a712ad9970e6cf24378a`
 
 **Run 2** — `local_process`
 - **NO ISOLATION WAS ENFORCED.** This run executed as ordinary processes on one host. The results describe what the model answered and establish nothing about whether it could reach the data or the network. Not sandbox evidence.
-- Relay hash log: `sha256:4e358109d2e406d03a39ffc6ecc6c0dfb4322cb6fb701c24654713b42c0802d1`
-- Model decision log: `sha256:9afb64b10d8d65ca64e4b43a30b6118c22b34e07cce325075dc21301ada54707`
+- Relay hash log: `sha256:b779fa8565983ea98f9b3a8c0c90174f9e65eacd3da7fab42250082279c55929`
+- Model decision log: `sha256:b329ada8dbccc2538019f97118bf2d39e7aa0e7ce7e4519d70e46a1b9d050293`
 
 ## 8. Deletion (Art. 59(1)(g))
 
-- **crypto_shredding** at 2026-09-29T08:52:00+00:00
+- **crypto_shredding** at 2026-10-11T14:57:47+00:00
   - Key scopes: data/demo-001/lab-heldout-v1
   - Effect: The data keys are gone; the ciphertext they protected is permanently unreadable. Test images cannot be recovered by anyone, including the sandbox operator.
   - Retained: The decision log, the relay hash log and the ledger are retained. They carry hashes, metrics and signatures and no test data; the ledger also names the parties' staff who acted. Art. 19(1) requires them to be kept for at least six months.
-  - Ledger entry: seq 24, hash `sha256:89c4cf0a6b77cac0a6ec2ea14504b7db6d8c24d3b8ef017e36d7fcb0c9942ec4`
+  - Ledger entry: seq 24, hash `sha256:baa4bab472def282ce7dd6351c5364234962b5d64cf933c317e18f63993effc8`
 
 ## 9. Post-market monitoring (Annex IV, 9)
 
 Out of scope for this participation. The sandbox establishes performance under the conditions recorded above; Art. 72 monitoring after placing on the market is the provider's own plan and is not evidenced here.
 
 ## 10. Verification
+
+Generated by histor 0.1.1, from commit `2344c1ce43e7a0b3592a407fbfeefd0cae009e7f`.
 
 ```
   ok    bundle_version: is this a bundle format this verifier knows how to check?
@@ -266,10 +268,10 @@ Out of scope for this participation. The sandbox establishes performance under t
         age_band=18_24 (n=9)
   ok    deletion: were keys destroyed after exit?
         keys destroyed after exit: ['data/demo-001/lab-heldout-v1']
-  warn  completeness: does the ledger end as a participation that has ended does?
-        INCOMPLETE: the ledger ends at seq 24 (keys_destroyed) without an exit
-        report after that. Either the participation has not ended, or the ledger
-        was cut short and nothing inside it can show that
+  ok    completeness: does the ledger end as a participation that has ended does?
+        exit and keys destroyed, up to seq 24. This is the verification the exit
+        report quotes, run before the ledger records that report and the
+        regulator's signature over it; verify the bundle to check those
   warn  timestamps: are the timestamps valid, ordered, and external?
         every timestamp was issued by the sandbox operator's own development
         authority, not by a third party. The ordering is self-consistent and
@@ -294,9 +296,9 @@ Out of scope for this participation. The sandbox establishes performance under t
         consistently. Pass them from outside, with --anchors or the --expect-*
         options.
   ok    bundle_digest: does the bundle match the digest in its own manifest?
-        sha256:fff8a8b2304dd9a47414f67ee3674b2a7072588bce2f005aec82ac9d58e76c88
+        sha256:aa2bbd2070073aef5eea4911fc6f7717048676adbb9e2b9ee0f383d5138aa6ea
 
-VERIFIED — 17 checks passed, 8 warning(s)
+VERIFIED — 18 checks passed, 7 warning(s)
 
 Anchors given from outside: none
 Anchors read from the bundle: plan_digest, sandbox_id, tsa_root, idp_keys, policy_digest, harness_digest, signing_keys, audience, ledger_head
@@ -314,9 +316,6 @@ What this bundle does NOT establish:
   - sample_sizes: 2 group(s) fell below the plan's minimum and were not
     scored: run 1 accuracy_by_group mae age_band=18_24 (n=9), run 2
     accuracy_by_group mae age_band=18_24 (n=9)
-  - completeness: INCOMPLETE: the ledger ends at seq 24 (keys_destroyed)
-    without an exit report after that. Either the participation has not
-    ended, or the ledger was cut short and nothing inside it can show that
   - timestamps: every timestamp was issued by the sandbox operator's own
     development authority, not by a third party. The ordering is
     self-consistent and anchors nothing: an operator able to rebuild this

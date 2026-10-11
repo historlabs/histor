@@ -1,5 +1,5 @@
 {
-  "registry_version": "4",
+  "registry_version": "5",
   "bundle_version": "0.3",
   "spec": "spec/evidence-bundle.md",
   "outcomes": [
@@ -7,7 +7,7 @@
     "fail",
     "warn"
   ],
-  "anchored": "any external anchor was given (plan_digest, sandbox_id, tsa_root, idp_keys, policy_digest, harness_digest, signing_keys, audience, ledger_head, checkpoints, centre_keys, vendor_roots)",
+  "anchored": "any external anchor was given (plan_digest, sandbox_id, tsa_root, idp_keys, policy_digest, harness_digest, signing_keys, audience, ledger_head, checkpoints, centre_keys, vendor_roots, releases)",
   "checks": [
     {
       "id": "bundle_files",
@@ -345,13 +345,14 @@
     {
       "id": "sample_sizes",
       "order": 19,
-      "meaning": "Whether any group was too small to be scored.",
+      "meaning": "Whether any group was too small to be scored, or departs from the group values the plan names.",
       "fails_when": "never",
-      "warns_when": "any insufficient_sample group",
+      "warns_when": "any insufficient_sample group; a group the plan's group_values do not name, or a named value with no group",
       "anchors": "no effect",
       "notes": "",
       "enforces": [
-        "B-113"
+        "B-113",
+        "B-191"
       ]
     },
     {
@@ -450,8 +451,21 @@
       ]
     },
     {
-      "id": "report_renderings",
+      "id": "software_release",
       "order": 26,
+      "meaning": "The histor the ledger says wrote the report and exported the bundle is, by version and commit, a release you hold.",
+      "fails_when": "a recorded software is not histor; with releases, a recorded version is a release whose commit is another",
+      "warns_when": "a record names no commit or a checkout with uncommitted changes; with releases, a recorded version and commit that is not one of them",
+      "anchors": "releases (--release) enable the release comparison",
+      "notes": "Emitted only when a report_generated entry records software.",
+      "enforces": [
+        "B-192",
+        "B-193"
+      ]
+    },
+    {
+      "id": "report_renderings",
+      "order": 27,
       "meaning": "The exit report is rendered in every language the plan names, the authentic one being the report the ledger committed to, each rendering named by hash in it.",
       "fails_when": "the plan names languages and the report entry records no renderings, or other languages; a language lacks a document; no single authentic pair; the authentic report or written proof is not the one the entry records; given the files, one hashes otherwise or the authentic report does not name another by hash",
       "warns_when": "the renderings are recorded but their files were not available (--report-dir, or the bundle's parent directory)",
@@ -465,7 +479,7 @@
     },
     {
       "id": "nb_tests",
-      "order": 27,
+      "order": 28,
       "meaning": "Every run the notified body initiated was authorised as the plan it ran under says: its proposal, then the approvals or the amendment, then the run.",
       "fails_when": "the run_started entry and the attestation disagree on initiated_by or authorisation; the run or its proposal does not follow the gate decision that allowed it; the proposal is missing, later than the run, unjustified, declined before the run, or its digest does not recompute; the run tests anything but the proposed test; pre-authorised: the plan it cites does not allow notified-body tests or admit the test, or an approver it names did not approve between proposal and run, or an approval's IdP token does not verify, bind the proposal's digest or name the person the plan names; by amendment: the plan it cites does not adopt the proposal unchanged, or was not put in force between proposal and run; more notified-body runs than notified_body_tests.max_runs; a run not marked as the notified body's reports a proposed test its plan does not list",
       "warns_when": "an approval was made through the development IdP, or matches the plan's party by email only",
@@ -484,7 +498,7 @@
     },
     {
       "id": "anchor_checkpoints",
-      "order": 28,
+      "order": 29,
       "meaning": "The ledger extends every head checkpoint you were given.",
       "fails_when": "a checkpoint's control-plane signature or timestamp does not verify, or its timestamp is over something else or at another time; it names another sandbox; the ledger holds no entry at its seq with its head_hash; that entry was recorded after the checkpoint was made",
       "warns_when": "a checkpoint carries a development timestamp",
@@ -499,7 +513,7 @@
     },
     {
       "id": "anchor_plan_digest",
-      "order": 29,
+      "order": 30,
       "meaning": "Every plan the bundle names is one whose digest you gave.",
       "fails_when": "a plan file does not hash to its name; a plan version, signing or run names another digest; no plan",
       "warns_when": "never",
@@ -512,7 +526,7 @@
     },
     {
       "id": "anchor_sandbox_id",
-      "order": 30,
+      "order": 31,
       "meaning": "The manifest, ledger, plans and runs name the sandbox id you gave.",
       "fails_when": "any of them names another",
       "warns_when": "never",
@@ -524,7 +538,7 @@
     },
     {
       "id": "anchor_tsa_root",
-      "order": 31,
+      "order": 32,
       "meaning": "Every timestamp chains to a TSA root you gave.",
       "fails_when": "no entry stamped; a dev token; a token that does not chain to the given roots",
       "warns_when": "never",
@@ -539,7 +553,7 @@
     },
     {
       "id": "anchor_idp_keys",
-      "order": 32,
+      "order": 33,
       "meaning": "Every plan and report signature was made with a key in the JWKS you gave.",
       "fails_when": "no IdP signature at all; a signature's JWK thumbprint is not in the set",
       "warns_when": "never",
@@ -551,7 +565,7 @@
     },
     {
       "id": "anchor_policy_digest",
-      "order": 33,
+      "order": 34,
       "meaning": "Every plan version and run records the network policy digest you gave.",
       "fails_when": "a plan or run records another; no plan",
       "warns_when": "never",
@@ -563,7 +577,7 @@
     },
     {
       "id": "anchor_harness_digest",
-      "order": 34,
+      "order": 35,
       "meaning": "Every plan version and run records the harness image digest you gave.",
       "fails_when": "a plan or run records another; no plan",
       "warns_when": "never",
@@ -575,7 +589,7 @@
     },
     {
       "id": "anchor_ledger_head",
-      "order": 35,
+      "order": 36,
       "meaning": "The ledger holds the head you hold.",
       "fails_when": "the ledger ends before the head's seq (entries were cut from its end), or its entry there hashes otherwise (it was rewritten from that point)",
       "warns_when": "never",
@@ -587,10 +601,10 @@
     },
     {
       "id": "anchors",
-      "order": 36,
+      "order": 37,
       "meaning": "Which anchors were given from outside the bundle.",
       "fails_when": "never (a malformed-input failure only)",
-      "warns_when": "any anchor came from the bundle (ledger_head and checkpoints count as one; centre_keys only when a centre signed evidence; vendor_roots only when there is TEE evidence or a tee_policy)",
+      "warns_when": "any anchor came from the bundle (ledger_head and checkpoints count as one; centre_keys only when a centre signed evidence; vendor_roots only when there is TEE evidence or a tee_policy; releases only when the ledger records its software)",
       "anchors": "passes when all are given",
       "notes": "",
       "enforces": [
@@ -599,7 +613,7 @@
     },
     {
       "id": "bundle_digest",
-      "order": 37,
+      "order": 38,
       "meaning": "No file changed after the manifest was written.",
       "fails_when": "manifest.bundle_digest is not D",
       "warns_when": "never",
@@ -612,7 +626,7 @@
     },
     {
       "id": "malformed",
-      "order": 38,
+      "order": 39,
       "meaning": "The CLI's last resort: the bundle could not be read at all.",
       "fails_when": "verify_bundle raised; this is then the only result",
       "warns_when": "never",

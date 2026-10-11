@@ -5,8 +5,13 @@
 # versions you signed, the signing keys from the sandbox's published key register.
 sandbox_id: demo-001
 plan_digest:
-  - sha256:d2f1d7f7ccbc2f2c5b6352d029acf8dec319c66daa9182be6e8de18c4b66ffb2
-  - sha256:7c29182e4070eda49c49c768f710fe55d509292558b1b93a28496b1a131f1354
+  - sha256:22b21f73bb5fef4f896cfc995c3e9b9c6a4f632b4629c4443bbbb7e4edf7f040
+  - sha256:ae2c857ca4a639da97a7227eb89f58372ef111b68dac81bf490da242e44d7089
 signing_keys:
   control-plane: anchors/control-plane.pem
   harness: anchors/harness.pem
+# The histor release that made the sample, as its signed release file states it
+# (histor-0.1.1.release.json).
+releases:
+  - version: "0.1.1"
+    commit: 2344c1ce43e7a0b3592a407fbfeefd0cae009e7f

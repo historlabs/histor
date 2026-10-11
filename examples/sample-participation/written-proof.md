@@ -1,6 +1,6 @@
 # Written proof — Point-of-sale age estimator
 
-Sandbox `demo-001` · plan `sha256:7c29182e4070eda49c49c768f710fe55d509292558b1b93a28496b1a131f1354`
+Sandbox `demo-001` · plan `sha256:ae2c857ca4a639da97a7227eb89f58372ef111b68dac81bf490da242e44d7089`
 
 > Written proof of the activities carried out in the AI regulatory sandbox (AI Act Art. 57(7)), with the elements of the draft implementing act, Art. 6(2). Documentation evidence for notified bodies and market surveillance authorities (draft implementing act Art. 6(2)). It does not have the status or legal effect of an EU declaration of conformity under AI Act Art. 47, and exiting a sandbox grants no presumption of conformity.
 
@@ -55,12 +55,12 @@ Objectives, against the tests the plan says evidence them:
 
 ## 4. Completion (Art. 6(2)(c))
 
-- **Completed**: yes, exit allowed by the gate at 2026-09-29T08:52:00.824Z (ledger seq 23)
+- **Completed**: yes, exit allowed by the gate at 2026-10-11T14:57:47.661Z (ledger seq 23)
 - **Data keys destroyed**: ledger seq 24
-- **Exit report due by**: 2026-11-29T08:52:00.824000+00:00 (two months after completion, draft implementing act Art. 6(4))
+- **Exit report due by**: 2026-12-11T14:57:47.661000+00:00 (two months after completion, draft implementing act Art. 6(4))
 
 ## 5. Evidence
 
-- Ledger head: `sha256:89c4cf0a6b77cac0a6ec2ea14504b7db6d8c24d3b8ef017e36d7fcb0c9942ec4`
-- Evidence bundle at generation: `sha256:fff8a8b2304dd9a47414f67ee3674b2a7072588bce2f005aec82ac9d58e76c88`
+- Ledger head: `sha256:baa4bab472def282ce7dd6351c5364234962b5d64cf933c317e18f63993effc8`
+- Evidence bundle at generation: `sha256:aa2bbd2070073aef5eea4911fc6f7717048676adbb9e2b9ee0f383d5138aa6ea`
 - Check the bundle offline with `histor verify <bundle>`.

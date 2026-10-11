@@ -25,10 +25,10 @@ the day the library grows an ``aad`` argument the two can be swapped without a f
 change. The wire format is the library's: the 32-byte encapsulated key, then the
 ciphertext.
 
-The request digest is ``sha256:`` over the request's canonical JSON, the same
-canonical form :func:`histor.harness.runner.canonical` uses. It is defined again here rather
-than imported, so that the key broker does not import the harness; a test holds the
-two to the same bytes.
+The request digest is ``sha256:`` over the request's canonical JSON, CJ-A
+(:func:`histor.crypto.canonical.canonical_json_ascii`), the form the harness's
+statement digests use. That module imports nothing from ``histor``, so the key
+broker still does not import the harness.
 """
 
 from __future__ import annotations
@@ -46,6 +46,8 @@ from cryptography.hazmat.primitives.asymmetric.x25519 import X25519PrivateKey, X
 from cryptography.hazmat.primitives.ciphers.aead import ChaCha20Poly1305
 from cryptography.hazmat.primitives.kdf.hkdf import HKDFExpand
 from cryptography.hazmat.primitives.serialization import Encoding, PublicFormat
+
+from histor.crypto.canonical import canonical_json_ascii
 
 REQUEST_FORMAT = "sbx-release-request-v1"
 RESPONSE_FORMAT = "sbx-release-v1"
@@ -170,11 +172,6 @@ class JobKey:
 # --- the request ----------------------------------------------------------------
 
 
-def canonical(payload: dict[str, Any]) -> bytes:
-    """Canonical JSON, byte for byte :func:`histor.harness.runner.canonical`."""
-    return json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
-
-
 def _now() -> str:
     return datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
 
@@ -208,8 +205,65 @@ def build_request(
     }
 
 
+# How the plan's centre keeps the model off the network (``execution.centre.
+# network_isolation``): a network namespace holding loopback alone, or, on nodes that
+# make no network namespaces, the job's syscall filter (``sandbox-net confine``).
+NAMESPACE = "namespace"
+SYSCALL_FILTER = "syscall_filter"
+# What the probe records when the syscall filter refused an attempt: the kernel's
+# EPERM, not an unreachable network or a timeout.
+FILTER_REFUSAL = "blocked: Operation not permitted"
+
+
+def network_isolation(plan: dict[str, Any]) -> str:
+    """The plan's ``execution.centre.network_isolation``; ``namespace`` when unset."""
+    centre = (plan.get("execution") or {}).get("centre") or {}
+    return str(centre.get("network_isolation") or NAMESPACE)
+
+
+def isolation_problems(measurements: dict[str, Any], isolation: str = NAMESPACE) -> list[str]:
+    """What is wrong with the job's measurements of the model's network, under the
+    isolation the plan declares; none when keys may go to the job.
+
+    Every attempt of the probe must have been blocked. Under ``namespace`` the model's
+    namespace must hold loopback alone. Under ``syscall_filter`` the model shares the
+    node's interfaces, so they are recorded but not required to be loopback; instead
+    every connection the probe tried must have been refused by the filter itself, which
+    shows the probe ran under it. The key broker, the provider's releaser and the
+    verifier all apply this, so they cannot disagree."""
+    if isolation not in (NAMESPACE, SYSCALL_FILTER):
+        return [f"the plan names network isolation {isolation!r}, which nothing here checks"]
+    probe = measurements.get("probe")
+    if not isinstance(probe, list) or not probe:
+        return ["the probe recorded no attempts"]
+    reached = [
+        str(attempt.get("target", "?")) if isinstance(attempt, dict) else str(attempt)
+        for attempt in probe
+        if not (isinstance(attempt, dict) and str(attempt.get("result", "")).startswith("blocked"))
+    ]
+    if reached:
+        return [f"the probe was not blocked for {', '.join(reached)}"]
+    if isolation == SYSCALL_FILTER:
+        unfiltered = [
+            str(attempt.get("target"))
+            for attempt in probe
+            if str(attempt.get("target", "")).rpartition(":")[2].isdigit()
+            and attempt.get("result") != FILTER_REFUSAL
+        ]
+        if unfiltered:
+            return [
+                "the syscall filter did not refuse the probe's connections to "
+                f"{', '.join(unfiltered)}, so the probe did not run under it"
+            ]
+        return []
+    links = measurements.get("netns_links")
+    if links != ["lo"]:
+        return [f"the model's namespace has interfaces {links}, not loopback alone"]
+    return []
+
+
 def request_digest(request: dict[str, Any]) -> str:
-    return "sha256:" + hashlib.sha256(canonical(request)).hexdigest()
+    return "sha256:" + hashlib.sha256(canonical_json_ascii(request)).hexdigest()
 
 
 def job_public_key_bytes(request: dict[str, Any]) -> bytes:
@@ -273,7 +327,7 @@ def seal_response(
     """Seal the run's keys to the request's ``job_public_key``, bound to its digest."""
     check_request_shape(request)
     digest = request_digest(request)
-    plaintext = canonical(
+    plaintext = canonical_json_ascii(
         {
             "format": RESPONSE_FORMAT,
             "request_digest": digest,

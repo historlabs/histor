@@ -14,7 +14,7 @@ run with a list of what the bundle does not establish, even when every check pas
 
 ## What this release contains
 
-Version 0.1.0 is the first public release. It holds the formats and the verifier only.
+Version 0.1.1 holds the formats and the verifier only.
 
 | Path | Contents |
 |---|---|
@@ -45,7 +45,7 @@ histor verify --anchors examples/sample-participation/anchors.yaml \
   examples/sample-participation/evidence-bundle
 ```
 
-The run ends with `VERIFIED — 21 checks passed, 7 warning(s)` and then the list of
+The run ends with `VERIFIED — 22 checks passed, 7 warning(s)` and then the list of
 what the sample does not establish. Exit code 0 means no check failed. The seven
 warnings are expected: the sample was produced on one computer with no isolation and
 with development keys, and the [sample's README](examples/sample-participation/README.md)

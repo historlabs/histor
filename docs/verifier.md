@@ -24,7 +24,7 @@ git clone https://github.com/historlabs/histor && cd histor
 python3 -m venv .venv && . .venv/bin/activate
 pip install .
 histor verify --version
-# histor verify 0.1.0 (bundle_version 0.1, 0.2, 0.3)
+# histor verify 0.1.1 (bundle_version 0.1, 0.2, 0.3)
 ```
 
 You can also install a released wheel, after checking it against its signature and
@@ -105,6 +105,7 @@ ledger_head: "57:sha256:3c9e…"   # a ledger head you hold, <seq>:sha256:<hex>
 checkpoints: [head-2026-10-01.json, head-2026-10-15.json]  # head checkpoints you kept
 centre_keys: centres.jwks        # each HPC centre's signing key, from the centre
 vendor_roots: [amd-ark-milan.pem] # TEE vendors' root certificates, from the vendors
+releases: [histor-0.1.1.release.json] # histor releases, from their signed GitHub releases
 ```
 
 A flag on the command line replaces the file's value for the same anchor.
@@ -210,6 +211,7 @@ nothing.
 | `--expect-head SEQ:HASH` | `anchor_ledger_head` | The ledger holds no entry at that seq (it ends before it, so entries were cut from its end), or the entry there hashes to something else (the ledger was rewritten from that point). A ledger that extends the head passes and says by how many entries. |
 | `--centre-keys FILE` | `isolation` | Evidence or an image conversion a centre signed does not verify under a key you gave for that centre (a JWKS whose `kid` is the centre's name, a JSON object of name to PEM, or one PEM for any centre, `hpc-centre`), or the ledger's `hpc_centre_key` records another key for it: the operator's key passed off as the centre's. |
 | `--vendor-roots PEM` | `tee_attestation` | A recorded attestation report's certificate chain does not end at one of the root certificates you gave (repeatable; a file may hold several; each must be self-signed). Without it, the roots are the ones the plan's `tee_policy` lists by fingerprint, which both parties signed but which you did not obtain yourself. |
+| `--release RELEASE_JSON` | `software_release` | The ledger's `report_generated` entry records histor's version and commit. A recorded version that is one of the releases you gave, at another commit, fails: the software called itself a release it is not. A commit that is none of your releases, no commit, or a checkout with uncommitted changes warns. Take the release file (`histor-<version>.release.json`) from the GitHub release of historlabs/histor and check its Sigstore bundle first (`cosign verify-blob`, as for the wheel). This is what the operator's software says about itself; it shows which code they say ran, not that it ran. |
 | `--checkpoint FILE` | `anchor_checkpoints` | A head checkpoint's signature does not verify under the control plane's key (from your `--signing-key`, else the ledger), its timestamp does not verify (under your `--tsa-root` when given) or does not cover what it signs, it names another sandbox, or the ledger does not hold its head recorded no later than the checkpoint was made. A checkpoint stamped by the development authority warns: the operator could have made it at any time. |
 
 ## 4. Getting anchors independently of the operator

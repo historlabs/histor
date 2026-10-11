@@ -27,6 +27,7 @@ from pathlib import Path
 from typing import Any
 
 from histor.crypto import signing
+from histor.crypto.canonical import canonical_json_ascii
 from histor.ledger.bundle import Bundle
 
 HERE = Path(__file__).resolve().parent
@@ -50,8 +51,7 @@ def _statement(envelope: Json) -> Json:
 
 
 def _envelope_digest(envelope: Json) -> str:
-    canonical = json.dumps(envelope, sort_keys=True, separators=(",", ":")).encode("utf-8")
-    return "sha256:" + hashlib.sha256(canonical).hexdigest()
+    return "sha256:" + hashlib.sha256(canonical_json_ascii(envelope)).hexdigest()
 
 
 def ledger_one_char_edit(bundle: Path) -> None:
@@ -75,7 +75,7 @@ def swapped_result(bundle: Path) -> None:
     first, second = statements[by_run[1]], statements[by_run[2]]
     first["predicate"]["results"] = second["predicate"]["results"]
     first["predicate"]["outcome"] = second["predicate"]["outcome"]
-    payload = json.dumps(first, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    payload = canonical_json_ascii(first)
     envelopes[by_run[1]]["payload"] = base64.b64encode(payload).decode("ascii")
     _write_lines(path, envelopes)
 

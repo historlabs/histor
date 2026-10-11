@@ -90,7 +90,11 @@ def version() -> str:
         package = installed("histor")
     except PackageNotFoundError:
         from histor import __version__ as package
-    return f"histor verify {package} (bundle_version {', '.join(SUPPORTED_BUNDLE_VERSIONS)})"
+    from histor import software
+
+    sha = str(software().get("commit") or "")
+    built = f", commit {sha[:12]}" if sha else ""
+    return f"histor verify {package} (bundle_version {', '.join(SUPPORTED_BUNDLE_VERSIONS)}){built}"
 
 
 def _anchors(args: argparse.Namespace) -> Anchors:
@@ -131,6 +135,7 @@ def _anchors(args: argparse.Namespace) -> Anchors:
         vendor_roots=tuple(
             pem for path in args.vendor_roots for pem in anchor_files.read_vendor_roots(path)
         ),
+        releases=tuple(pair for path in args.release for pair in anchor_files.read_releases(path)),
     )
     return from_file.merged(flags)
 
@@ -243,6 +248,15 @@ def main(argv: list[str] | None = None) -> int:
         help="TEE vendor root certificates, from the vendors (AMD's ARK, Intel's SGX root; "
         "for the mock platform, the mock root): every recorded attestation report's chain "
         "must end at one of them (repeatable; a file may hold several)",
+    )
+    given.add_argument(
+        "--release",
+        type=Path,
+        action="append",
+        default=[],
+        metavar="RELEASE_JSON",
+        help="a histor release file (histor-<version>.release.json, from the signed "
+        "release): the histor the ledger says wrote the record must be one (repeatable)",
     )
     args = parser.parse_args(argv)
 

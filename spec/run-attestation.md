@@ -291,7 +291,11 @@ Two arms, `cilium` and `hpc_centre`, with different trust models:
   the ledger must also hold a `key_released` entry for the run: the key broker
   released the data keys to one job's public key only after that job's measured SIF
   digests matched the conversions, every probe from the model's namespace was
-  blocked, and that namespace held only loopback. A
+  blocked, and that namespace held only loopback. A plan whose
+  `execution.centre.network_isolation` is `syscall_filter` (for nodes that make no
+  network namespaces) replaces the last condition: the model shares the node's
+  interfaces, which are recorded, and every connection the probe tried must have
+  been refused by the job's syscall filter (`blocked: Operation not permitted`). A
   `key_release_refused` entry is an incident, and the verifier reports it.
 
 These are **not equivalent**, and the verifier must not present them as if they were.

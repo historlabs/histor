@@ -34,6 +34,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+from histor.crypto.canonical import canonical_json_ascii
 from histor.crypto.timestamps import TimestampAuthority, TimestampToken
 from histor.obs.logs import get_logger
 
@@ -47,6 +48,11 @@ ENTRY_TYPES = frozenset(
         "plan_signature",
         # The provider says which model to test; a proposal until the plan pins it.
         "model_configured",
+        # Before anything is in force, a change to the plan as drafted in the console,
+        # carrying the whole new draft, and the regulator sending a draft for both
+        # parties to sign (histor/plan/drafting.py).
+        "plan_drafted",
+        "plan_sent",
         # A model brought up alone, with no data, before any run: whether it came up
         # and passed the inference profile, and the digest of the log the provider saw.
         "model_preflight",
@@ -179,7 +185,7 @@ def compute_hash(
     Over a canonical serialisation of everything that identifies the entry, so
     reformatting the stored JSON cannot change the hash and changing any field must.
     """
-    canonical = json.dumps(
+    canonical = canonical_json_ascii(
         {
             "seq": seq,
             "sandbox_id": sandbox_id,
@@ -187,10 +193,8 @@ def compute_hash(
             "recorded_at": recorded_at,
             "body": body,
             "prev_hash": prev,
-        },
-        sort_keys=True,
-        separators=(",", ":"),
-    ).encode("utf-8")
+        }
+    )
     return "sha256:" + hashlib.sha256(canonical).hexdigest()
 
 

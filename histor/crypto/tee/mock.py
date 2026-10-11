@@ -38,11 +38,11 @@ from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives.asymmetric.utils import decode_dss_signature
 from cryptography.x509.oid import NameOID
 
+from histor.crypto.canonical import canonical_json_ascii
 from histor.crypto.tee.evidence import (
     Collateral,
     TeeError,
     TeeEvidence,
-    canonical,
     sha256_digest,
 )
 from histor.crypto.tee.report import SHA384, ParsedReport, Platform, ecdsa_verify
@@ -238,8 +238,10 @@ def make_report(
         "debug": debug,
         "report_data": report_data.hex(),
     }
-    signature = key.sign(canonical(body), ec.ECDSA(hashes.SHA384()))
-    return canonical({"body": body, "signature": base64.b64encode(signature).decode("ascii")})
+    signature = key.sign(canonical_json_ascii(body), ec.ECDSA(hashes.SHA384()))
+    return canonical_json_ascii(
+        {"body": body, "signature": base64.b64encode(signature).decode("ascii")}
+    )
 
 
 def _read(report: bytes) -> tuple[dict[str, Any], bytes]:
@@ -251,7 +253,7 @@ def _read(report: bytes) -> tuple[dict[str, Any], bytes]:
         raise TeeError(f"not a mock TEE report: {error}") from None
     if not isinstance(body, dict) or body.get("format") != FORMAT:
         raise TeeError(f"not a {FORMAT}")
-    if canonical(data) != report:
+    if canonical_json_ascii(data) != report:
         raise TeeError("the mock report is not in canonical form")
     return body, signature
 
@@ -281,7 +283,9 @@ def signature_problems(report: bytes, leaf: x509.Certificate) -> list[str]:
         r, s = decode_dss_signature(signature)
     except ValueError:
         return ["the mock report's signature is not a DER ECDSA signature"]
-    problem = ecdsa_verify(leaf.public_key(), ec.SECP384R1, r, s, canonical(body), SHA384())
+    problem = ecdsa_verify(
+        leaf.public_key(), ec.SECP384R1, r, s, canonical_json_ascii(body), SHA384()
+    )
     return [f"the mock report's signature under its attestation key: {problem}"] if problem else []
 
 
@@ -345,7 +349,9 @@ def init_data_digest(harness_image_digest: str) -> str:
     """The mock's stand-in for the launch configuration that pins the harness image:
     SHA-256 of ``{"harness_image_digest": ...}`` in canonical JSON, 32 bytes like
     SEV-SNP's ``HOST_DATA``."""
-    return hashlib.sha256(canonical({"harness_image_digest": harness_image_digest})).hexdigest()
+    return hashlib.sha256(
+        canonical_json_ascii({"harness_image_digest": harness_image_digest})
+    ).hexdigest()
 
 
 def policy_for(

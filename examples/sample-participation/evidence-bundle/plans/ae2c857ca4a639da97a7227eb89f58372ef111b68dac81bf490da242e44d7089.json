@@ -19,7 +19,7 @@
   ],
   "artifacts": {
     "harness_image_digest": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
-    "model_image_digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+    "model_image_digest": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
     "network_policy_digest": "sha256:3333333333333333333333333333333333333333333333333333333333333333",
     "prompt_digest": "sha256:4444444444444444444444444444444444444444444444444444444444444444",
     "relay_image_digest": "sha256:2222222222222222222222222222222222222222222222222222222222222222"
@@ -102,6 +102,24 @@
       "constraint": "No training happens in the sandbox; the model arrives trained."
     }
   ],
+  "group_values": {
+    "age_band": [
+      "under_14",
+      "14_17",
+      "18_24",
+      "25_39",
+      "40_plus"
+    ],
+    "sex": [
+      "f",
+      "m"
+    ],
+    "skin_tone_band": [
+      "I-II",
+      "III-IV",
+      "V-VI"
+    ]
+  },
   "limits": {
     "max_requests_per_minute": 600,
     "max_run_duration_minutes": 120,
@@ -280,8 +298,8 @@
   },
   "sandbox_id": "demo-001",
   "signatures": {
-    "provider": "wVVGrKR3cM8QKmI4lF6iWQVX1oiLeu9C2nosBmgEboXj4mRLXSCfaTEr19A3xdvmbTULWMzX0g8A1IpzUmHFBw==",
-    "regulator": "qOWIKeWVGl4zIMJO+2mn6ynABMj8+qeWuFWfMT32aAAxt+pfF+OA92QMkowrX3ou/KKzy2CkBav2N1u7Uy/vDQ=="
+    "provider": "krIRlUOPeG4t8nUu+vg5eJJtTvLNf2AOuaMZ4s4lTLbRQFzLI44uqyJbi8et7iZLPdJsxU5ndP/HfOEhFXIPAw==",
+    "regulator": "9+WM3kerUSyI1qWAgmaAvixfLhOttBzsLXX+xcUF17gR55TqwNroIPju5nGMh/Xp9iQpoKQ9cXUbhJoOooa9Aw=="
   },
   "standards": [
     {
@@ -315,7 +333,7 @@
         "multiple_comparison_correction": "bonferroni"
       },
       "thresholds": {
-        "max_per_group": 0.75
+        "max_per_group": 4.0
       },
       "type": "accuracy_by_group"
     },

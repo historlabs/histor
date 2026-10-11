@@ -66,9 +66,9 @@ histor verify --anchors examples/sample-participation/anchors.yaml \
 ```
 
 The output matches [`verify-anchored.txt`](verify-anchored.txt) and ends
-`VERIFIED — 21 checks passed, 7 warning(s)`. Add `--json` to compare with
+`VERIFIED — 22 checks passed, 7 warning(s)`. Add `--json` to compare with
 [`verify-anchored.json`](verify-anchored.json). Leave out `--anchors` and the output
-matches [`verify.txt`](verify.txt), ending `VERIFIED — 19 checks passed, 7
+matches [`verify.txt`](verify.txt), ending `VERIFIED — 20 checks passed, 7
 warning(s)`: the same checks, with the anchors read from the bundle itself, which the
 verdict warns about.
 

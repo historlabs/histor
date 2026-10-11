@@ -206,6 +206,14 @@ artifacts:
   network_policy_digest: "sha256:3333333333333333333333333333333333333333333333333333333333333333"
   prompt_digest: "sha256:4444444444444444444444444444444444444444444444444444444444444444"
 
+# The values each group dimension takes, set by the authority and the test lab: the
+# groups the system is tested across. The test lab labels its items with these; a run
+# that scores another value, or none for one of these, is flagged.
+group_values:
+  skin_tone_band: [I-II, III-IV, V-VI]
+  sex: [f, m]
+  age_band: [under_14, "14_17", "18_24", "25_39", 40_plus]
+
 datasets:
   - id: provider-validation
     role: provider_data

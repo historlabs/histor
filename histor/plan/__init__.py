@@ -30,6 +30,7 @@ import yaml
 from jsonschema import Draft202012Validator
 from jsonschema import exceptions as js_exceptions
 
+from histor.crypto.canonical import canonical_json_utf8
 from histor.crypto.resources import resource
 
 # Resolved when a plan is validated, not at import: an out-of-tree consumer vendors
@@ -83,15 +84,13 @@ def load_schema() -> dict[str, Any]:
     return schema
 
 
-def canonicalise(data: dict[str, Any]) -> bytes:
-    """Serialise a plan to the exact bytes its digest is taken over.
-
-    Sorted keys, no insignificant whitespace, UTF-8 without escaping. This is the
-    only place the on-disk format and the committed identity are allowed to differ.
-    """
-    return json.dumps(data, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode(
-        "utf-8"
-    )
+canonicalise = canonical_json_utf8
+"""Serialise a plan to the exact bytes its digest is taken over: CJ-U
+(`spec/evidence-bundle.md` sections 1 and 7), sorted keys, no insignificant
+whitespace, UTF-8 without escaping. This is the only place the on-disk format and
+the committed identity are allowed to differ. An alias of
+:func:`histor.crypto.canonical.canonical_json_utf8`, kept because it is this
+package's public name for the plan's canonical form."""
 
 
 def digest(data: dict[str, Any]) -> str:
@@ -132,6 +131,13 @@ def check_references(data: dict[str, Any]) -> list[str]:
         if dataset_id in seen_datasets:
             problems.append(f"datasets: duplicate dataset id {dataset_id!r}")
         seen_datasets.add(dataset_id)
+
+    carried = {g for d in datasets.values() for g in d.get("groups") or []}
+    for dimension in data.get("group_values") or {}:
+        if dimension not in carried:
+            problems.append(
+                f"group_values: names values for {dimension!r}, which no dataset carries"
+            )
 
     seen_tests: set[object] = set()
     for index, test in enumerate(data.get("tests", [])):

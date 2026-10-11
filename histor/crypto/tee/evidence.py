@@ -31,10 +31,11 @@ from __future__ import annotations
 import base64
 import binascii
 import hashlib
-import json
 import re
 from dataclasses import dataclass, field
 from typing import Any
+
+from histor.crypto.canonical import canonical_json_ascii
 
 PLATFORMS = ("sev-snp", "tdx", "mock")
 HARDWARE_PLATFORMS = ("sev-snp", "tdx")
@@ -46,11 +47,6 @@ _HEX = re.compile(r"^[0-9a-f]*$")
 
 class TeeError(ValueError):
     """TEE evidence, collateral or a binding that is malformed."""
-
-
-def canonical(value: Any) -> bytes:
-    """Canonical JSON: sorted keys, no whitespace, UTF-8."""
-    return json.dumps(value, sort_keys=True, separators=(",", ":")).encode("utf-8")
 
 
 def sha256_digest(data: bytes) -> str:
@@ -118,7 +114,7 @@ class Collateral:
 
     def digest(self) -> str:
         """``sha256:`` over the canonical JSON of :meth:`to_json`."""
-        return sha256_digest(canonical(self.to_json()))
+        return sha256_digest(canonical_json_ascii(self.to_json()))
 
 
 @dataclass(frozen=True)

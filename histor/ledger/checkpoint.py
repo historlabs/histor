@@ -31,10 +31,10 @@ from __future__ import annotations
 
 import datetime
 import hashlib
-import json
 from typing import Any
 
 from histor.crypto import signing
+from histor.crypto.canonical import canonical_json_ascii
 from histor.crypto.timestamps import TimestampAuthority, verify_token
 
 CHECKPOINT_TYPE = "https://historlabs.eu/ledger-head-checkpoint/v1"
@@ -61,8 +61,7 @@ def statement(sandbox_id: str, head: dict[str, Any], time: str) -> dict[str, Any
 
 
 def digest(value: dict[str, Any]) -> str:
-    canonical = json.dumps(value, sort_keys=True, separators=(",", ":")).encode("utf-8")
-    return "sha256:" + hashlib.sha256(canonical).hexdigest()
+    return "sha256:" + hashlib.sha256(canonical_json_ascii(value)).hexdigest()
 
 
 def make(

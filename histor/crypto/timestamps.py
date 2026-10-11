@@ -115,9 +115,15 @@ class Rfc3161Error(signing.VerificationError):
     """An RFC 3161 token or response that does not check out."""
 
 
+class Rfc3161RefusedError(Rfc3161Error):
+    """The authority answered, but did not grant the request."""
+
+
 # The prefix under which a timestamp authority's pinned root sits among the bundle's
 # public keys, so a verifier holding only the bundle knows which roots to trust.
 TSA_ROOT_PREFIX = "tsa-root:"
+# Tries per stamp before an authority's refusal or silence stops the run.
+STAMP_TRIES = 3
 
 
 class Rfc3161Authority:
@@ -149,6 +155,38 @@ class Rfc3161Authority:
 
     def stamp(self, digest: str) -> TimestampToken:
         import base64
+        import time
+
+        # A public authority refuses or drops the odd request under load (FreeTSA does);
+        # each try is a fresh request with a fresh nonce, so a retry stamps nothing twice.
+        for attempt in range(STAMP_TRIES):
+            try:
+                token_der, nonce = self._ask(digest)
+                break
+            except (Rfc3161RefusedError, OSError):
+                if attempt == STAMP_TRIES - 1:
+                    raise
+                time.sleep(2**attempt)
+        attested = verify_rfc3161(token_der, digest, [self.root_pem])
+        if attested["nonce"] != nonce:
+            raise Rfc3161Error(f"{self.name} answered with another request's nonce")
+        token: dict[str, Any] = {
+            "url": self.url,
+            "der": base64.b64encode(token_der).decode("ascii"),
+        }
+        revocation = self._revocation(attested)
+        if revocation is not None:
+            token["revocation"] = revocation
+        return TimestampToken(
+            authority=self.name,
+            kind="rfc3161",
+            timestamp=attested["time"],
+            digest=digest,
+            token=token,
+        )
+
+    def _ask(self, digest: str) -> tuple[bytes, int]:
+        """One request to the authority: its token and the nonce it must carry."""
         import os
         import urllib.request
 
@@ -177,28 +215,22 @@ class Rfc3161Authority:
         )
         with urllib.request.urlopen(http, timeout=self.timeout) as response:
             raw = response.read()
-        reply = tsp.TimeStampResp.load(raw)
-        status = reply["status"]["status"].native
-        if status not in {"granted", "granted_with_mods"}:
-            raise Rfc3161Error(f"{self.name} refused the request: {status}")
-        token_der = reply["time_stamp_token"].dump()
-        attested = verify_rfc3161(token_der, digest, [self.root_pem])
-        if attested["nonce"] != nonce:
-            raise Rfc3161Error(f"{self.name} answered with another request's nonce")
-        token: dict[str, Any] = {
-            "url": self.url,
-            "der": base64.b64encode(token_der).decode("ascii"),
-        }
-        revocation = self._revocation(attested)
-        if revocation is not None:
-            token["revocation"] = revocation
-        return TimestampToken(
-            authority=self.name,
-            kind="rfc3161",
-            timestamp=attested["time"],
-            digest=digest,
-            token=token,
-        )
+        # Read the status alone: asn1crypto's TimeStampResp requires the token, which
+        # a refusal leaves out.
+        try:
+            reply = core.Sequence.load(raw)
+            status = tsp.PKIStatusInfo.load(reply[0].dump())
+            granted = status["status"].native
+        except (ValueError, TypeError, KeyError) as error:
+            raise Rfc3161Error(f"{self.name} answered something other than a reply") from error
+        if granted not in {"granted", "granted_with_mods"}:
+            said = " ".join(status["status_string"].native or []) or ", ".join(
+                status["fail_info"].native or []
+            )
+            raise Rfc3161RefusedError(f"{self.name} refused the request: {granted} {said}".strip())
+        if len(reply) < 2:
+            raise Rfc3161Error(f"{self.name} granted the request but sent no token")
+        return reply[1].dump(), nonce
 
     def _revocation(self, attested: dict[str, Any]) -> dict[str, Any] | None:
         """The signer certificate's revocation status as the authority's CA gave it at
@@ -546,6 +578,20 @@ def _signed_by(public: Any, signature: bytes, data: bytes, algorithm: Any) -> bo
     return True
 
 
+def _extended_key_usage(certificate: Any) -> list[str]:
+    """The purposes a certificate's extended key usage names; none when it has none.
+    Read with asn1crypto, which parses one extension at a time: cryptography parses
+    them all at once and refuses a certificate whose other, non-critical extensions it
+    cannot read, as FreeTSA's OCSP responder's certificate policies (an empty policy
+    identifier)."""
+    from asn1crypto import x509 as asn1_x509
+    from cryptography.hazmat.primitives.serialization import Encoding
+
+    parsed = asn1_x509.Certificate.load(certificate.public_bytes(Encoding.DER))
+    usage = parsed.extended_key_usage_value
+    return [] if usage is None else list(usage.native)
+
+
 def revocation_problem(evidence: Any, chain_der: list[bytes], at: datetime) -> str | None:
     """What is wrong with a token's revocation evidence, or None when it shows the
     signer certificate was not revoked at ``at`` (the stamped time). Offline: the
@@ -556,7 +602,6 @@ def revocation_problem(evidence: Any, chain_der: list[bytes], at: datetime) -> s
     from cryptography import x509
     from cryptography.exceptions import InvalidSignature
     from cryptography.x509 import ocsp
-    from cryptography.x509.oid import ExtendedKeyUsageOID
 
     if not isinstance(evidence, dict) or evidence.get("kind") not in {"ocsp", "crl"}:
         return "the revocation evidence is not an OCSP response or a CRL"
@@ -607,10 +652,10 @@ def revocation_problem(evidence: Any, chain_der: list[bytes], at: datetime) -> s
             # A delegated responder: issued by the issuer, for OCSP signing only.
             try:
                 candidate.verify_directly_issued_by(issuer)
-                usage = candidate.extensions.get_extension_for_class(x509.ExtendedKeyUsage)
-            except (ValueError, TypeError, x509.ExtensionNotFound, InvalidSignature):
+                usage = _extended_key_usage(candidate)
+            except (ValueError, TypeError, InvalidSignature):
                 continue
-            if ExtendedKeyUsageOID.OCSP_SIGNING not in usage.value:
+            if "ocsp_signing" not in usage:
                 continue
         responder = candidate
         break

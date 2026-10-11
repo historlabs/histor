@@ -49,6 +49,7 @@ from pathlib import Path
 from typing import Any
 
 from histor.crypto import release, signing
+from histor.crypto.canonical import canonical_json_ascii
 
 FORMAT = "sbx-weights-v1"
 KEY_RESPONSE_FORMAT = "sbx-weights-release-v1"
@@ -69,10 +70,6 @@ class WeightsError(Exception):
     """A weights file, pin, response, order or receipt is malformed or does not open."""
 
 
-def _canonical(value: Any) -> bytes:
-    return json.dumps(value, sort_keys=True, separators=(",", ":")).encode("utf-8")
-
-
 def sha256_file(path: Path) -> str:
     """``sha256:`` over a file's bytes, read in chunks."""
     digest = hashlib.sha256()
@@ -80,6 +77,18 @@ def sha256_file(path: Path) -> str:
         for block in iter(lambda: handle.read(CHUNK_SIZE), b""):
             digest.update(block)
     return "sha256:" + digest.hexdigest()
+
+
+# A weights file whose name ends in this is a tar of several files (a model's shards,
+# a vision encoder beside its language model), unpacked for the model into a directory
+# of the name without it once its digests check.
+ARCHIVE_SUFFIX = ".tar"
+
+
+def model_path_name(name: str) -> str:
+    """What the model finds under its weights directory for a file of this name: the
+    file itself, or for a ``.tar`` the directory it is unpacked into."""
+    return name.removesuffix(ARCHIVE_SUFFIX) if name.endswith(ARCHIVE_SUFFIX) else name
 
 
 def check_name(name: str) -> str:
@@ -129,7 +138,7 @@ def make_pin(encrypted: dict[str, Any], releaser: signing.KeyPair) -> dict[str, 
     return {
         **fields,
         "releaser_public_key": releaser.public_pem,
-        "provider_signature": base64.b64encode(_canonical(envelope)).decode("ascii"),
+        "provider_signature": base64.b64encode(canonical_json_ascii(envelope)).decode("ascii"),
     }
 
 

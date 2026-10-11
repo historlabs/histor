@@ -36,7 +36,8 @@ from typing import Any
 
 from histor.plan import nbtests
 from histor.verifier.anchors import Anchors
-from histor.verifier.checks import FAIL, PASS, WARN, CheckResult, _party_problems
+from histor.verifier.checks import FAIL, PASS, WARN, CheckResult
+from histor.verifier.checks._parties import _party_problems
 
 ID = "nb_tests"
 QUESTION = (

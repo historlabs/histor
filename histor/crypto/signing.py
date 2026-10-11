@@ -29,6 +29,8 @@ from cryptography.hazmat.primitives.asymmetric.ed25519 import (
     Ed25519PublicKey,
 )
 
+from histor.crypto.canonical import canonical_json_ascii
+
 PAYLOAD_TYPE = "application/vnd.in-toto+json"
 # Between a key's name and its version in a key id: ``control-plane@v2``.
 VERSION_SEPARATOR = "@v"
@@ -84,16 +86,17 @@ def save(keypair: KeyPair, directory: Path) -> tuple[Path, Path]:
     otherwise would be worse than saying so. Production key custody is the key
     broker's job and, in version 2, hardware attestation's.
     """
+    # The key's bytes first: a key that cannot leave its store (Vault transit) is
+    # refused before anything is created on disk.
+    pem = keypair.private.private_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PrivateFormat.PKCS8,
+        encryption_algorithm=serialization.NoEncryption(),
+    )
     directory.mkdir(parents=True, exist_ok=True)
     private_path = directory / f"{keypair.key_id}.ed25519"
     public_path = directory / f"{keypair.key_id}.pub.pem"
-    private_path.write_bytes(
-        keypair.private.private_bytes(
-            encoding=serialization.Encoding.PEM,
-            format=serialization.PrivateFormat.PKCS8,
-            encryption_algorithm=serialization.NoEncryption(),
-        )
-    )
+    private_path.write_bytes(pem)
     private_path.chmod(0o600)
     public_path.write_text(keypair.public_pem, encoding="ascii")
     return private_path, public_path
@@ -127,8 +130,7 @@ def sign(keypair: KeyPair, payload: bytes, payload_type: str = PAYLOAD_TYPE) -> 
 
 
 def sign_json(keypair: KeyPair, payload: dict[str, Any]) -> dict[str, Any]:
-    canonical = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
-    return sign(keypair, canonical)
+    return sign(keypair, canonical_json_ascii(payload))
 
 
 class VerificationError(Exception):

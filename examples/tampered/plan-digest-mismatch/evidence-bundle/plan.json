@@ -102,6 +102,24 @@
       "constraint": "No training happens in the sandbox; the model arrives trained."
     }
   ],
+  "group_values": {
+    "age_band": [
+      "under_14",
+      "14_17",
+      "18_24",
+      "25_39",
+      "40_plus"
+    ],
+    "sex": [
+      "f",
+      "m"
+    ],
+    "skin_tone_band": [
+      "I-II",
+      "III-IV",
+      "V-VI"
+    ]
+  },
   "limits": {
     "max_requests_per_minute": 600,
     "max_run_duration_minutes": 120,
@@ -280,8 +298,8 @@
   },
   "sandbox_id": "demo-001",
   "signatures": {
-    "provider": "S+zPP6s5GXokDXpTPSM0ErvBi9ghebyTNJ+D/8b0I3k9Fp3Hn+eCY1ydHsQZlIKgzs/0ltxEseJHgCuhEJX+DQ==",
-    "regulator": "c5cVkRt6FAnQbAoR1nDRS7gqQJNagthl9axvCAgnglLD4hmtugF/38uYLOkX89MNhWH9kri9kMua1ApUbPK2Cw=="
+    "provider": "krIRlUOPeG4t8nUu+vg5eJJtTvLNf2AOuaMZ4s4lTLbRQFzLI44uqyJbi8et7iZLPdJsxU5ndP/HfOEhFXIPAw==",
+    "regulator": "9+WM3kerUSyI1qWAgmaAvixfLhOttBzsLXX+xcUF17gR55TqwNroIPju5nGMh/Xp9iQpoKQ9cXUbhJoOooa9Aw=="
   },
   "standards": [
     {
