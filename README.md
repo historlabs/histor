@@ -14,7 +14,7 @@ run with a list of what the bundle does not establish, even when every check pas
 
 ## What this release contains
 
-Version 0.1.1 holds the formats and the verifier only.
+Version 0.1.2 holds the formats and the verifier only.
 
 | Path | Contents |
 |---|---|

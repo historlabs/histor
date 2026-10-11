@@ -1,6 +1,6 @@
 {
   "attestation_count": 2,
-  "bundle_digest": "sha256:93bb14a6ed570ba6705fb5c41fe58cf881da086a9b71ffae3c93a346cd5db3d2",
+  "bundle_digest": "sha256:8eaaf97401a944573079af458223df6711efc97583f8254d96185be41d82d845",
   "bundle_version": "0.3",
   "entry_count": 27,
   "files": {
@@ -37,8 +37,8 @@
     "test_subject_data_basis": "none, by construction of the export: no image, no ground-truth label or age, no group label of an item and no item id of any dataset. Results are aggregates by group; the model's decision log gives its output per request, keyed by a random request id that nothing in the bundle links to an item"
   },
   "plan_versions": [
-    "sha256:22b21f73bb5fef4f896cfc995c3e9b9c6a4f632b4629c4443bbbb7e4edf7f040",
-    "sha256:ae2c857ca4a639da97a7227eb89f58372ef111b68dac81bf490da242e44d7089"
+    "sha256:c24e25cdd3646658a505471570e8377580ca4f7e822c2f1b09f5f49e78328aa5",
+    "sha256:e15693f14540fb6cf25e639f05a2fa4035be05468915f60736759c9d43186cf3"
   ],
   "sandbox_id": "demo-001",
   "verify_with": "uv run histor verify <this directory>"

@@ -29,7 +29,7 @@ from typing import Any
 
 __all__ = ["__version__", "software", "software_label"]
 
-__version__ = "0.1.1"
+__version__ = "0.1.2"
 
 # Filled in by `git archive`; left as is in a checkout or an installed wheel.
 COMMIT = "$Format:%H$"

@@ -19,7 +19,7 @@
   ],
   "artifacts": {
     "harness_image_digest": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
-    "model_image_digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+    "model_image_digest": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
     "network_policy_digest": "sha256:3333333333333333333333333333333333333333333333333333333333333333",
     "prompt_digest": "sha256:4444444444444444444444444444444444444444444444444444444444444444",
     "relay_image_digest": "sha256:2222222222222222222222222222222222222222222222222222222222222222"
@@ -298,8 +298,8 @@
   },
   "sandbox_id": "demo-001",
   "signatures": {
-    "provider": "Vv1DZBcbKv/jo2pXs9cE7Ej0sZ2stQiGTrVa6ntmA0r5fDrTfZpXOURhZtUQyu581cqwefJcVQ2sAj7S1kSeAg==",
-    "regulator": "tUKGe1n6rEEzoeqvr6rXocgZkX2Oh/1iXfPfjNQLwBC+lImOLTascENHNojgV/ErTCzG+lg7eJSt2PXLS20PBw=="
+    "provider": "p+C4ySNn/vZvh7XQbKXpWXN9tX7aQgmJj1TZf+pCHl/zMySjeFbmOzjo+OvKRdUxl/PwSfrZMFdsDpPeLHuBCQ==",
+    "regulator": "X4hA/7vx3+5932CMc9sx8TRDG1fB2VeUjEIR8IZ7DFNVI/JTTNu/81b3yOc1tKIqsyvQhdBRynb6J3CgJqJMAQ=="
   },
   "standards": [
     {
@@ -333,7 +333,7 @@
         "multiple_comparison_correction": "bonferroni"
       },
       "thresholds": {
-        "max_per_group": 0.75
+        "max_per_group": 4.0
       },
       "type": "accuracy_by_group"
     },

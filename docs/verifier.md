@@ -24,7 +24,7 @@ git clone https://github.com/historlabs/histor && cd histor
 python3 -m venv .venv && . .venv/bin/activate
 pip install .
 histor verify --version
-# histor verify 0.1.1 (bundle_version 0.1, 0.2, 0.3)
+# histor verify 0.1.2 (bundle_version 0.1, 0.2, 0.3)
 ```
 
 You can also install a released wheel, after checking it against its signature and
@@ -105,7 +105,7 @@ ledger_head: "57:sha256:3c9e…"   # a ledger head you hold, <seq>:sha256:<hex>
 checkpoints: [head-2026-10-01.json, head-2026-10-15.json]  # head checkpoints you kept
 centre_keys: centres.jwks        # each HPC centre's signing key, from the centre
 vendor_roots: [amd-ark-milan.pem] # TEE vendors' root certificates, from the vendors
-releases: [histor-0.1.1.release.json] # histor releases, from their signed GitHub releases
+releases: [histor-0.1.2.release.json] # histor releases, from their signed GitHub releases
 ```
 
 A flag on the command line replaces the file's value for the same anchor.

@@ -1,9 +1,9 @@
 {
   "control-plane": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAGNoBBbyXz52ac68go6VFzauC61a/floIjx5Y9vIy4WA=\n-----END PUBLIC KEY-----\n",
   "harness": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEA4MEAq5xioSppk+i0Pat2T7sHPQi4DydhCWBROdCq+lA=\n-----END PUBLIC KEY-----\n",
-  "provider": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAmjJLebpnCXOe3ZY6r7HQQePrWFwlAWqWE1kiPKPfG3Y=\n-----END PUBLIC KEY-----\n",
-  "regulator": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAKPrzWafImjLXrwOoMO2J9BHAA2ckb2HK3EB/3mmXSn8=\n-----END PUBLIC KEY-----\n",
-  "sandbox-operator": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAnU5b2zVr2KXR2JS/MTxt8OLYqHWFkBgOF5D57Dvf6uk=\n-----END PUBLIC KEY-----\n",
-  "test-lab": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAIj08rOFqK1Z7toTlctBIN1c+cC2exsV/kQVxwbMvmP4=\n-----END PUBLIC KEY-----\n",
-  "timestamp-authority": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAZTKyviMcGaIC5ojAuFpKsi3pt10IxglLmJOmMPvlXak=\n-----END PUBLIC KEY-----\n"
+  "provider": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAIlJZEtq6kDLqDOO44sNSm0tM+LnOpcwkFsJZLu13uu8=\n-----END PUBLIC KEY-----\n",
+  "regulator": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEADb5qO8JWSqqYmFytwhGOCGyZi3L0HHqotpl4TFQTbpU=\n-----END PUBLIC KEY-----\n",
+  "sandbox-operator": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEA8469Yu1CnBw/g08DnxceUbSnFirQkPcdhB7nTdEkBGs=\n-----END PUBLIC KEY-----\n",
+  "test-lab": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAaUGjeWaZc5oqrJKn+akjVzNyLVgrN3K/vSqo5J6m3tY=\n-----END PUBLIC KEY-----\n",
+  "timestamp-authority": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAwEinGlkDHfPMj0Eq08izhf7FMQp6jML4GCZCHL/Hzxg=\n-----END PUBLIC KEY-----\n"
 }

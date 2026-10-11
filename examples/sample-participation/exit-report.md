@@ -1,16 +1,16 @@
 # Sandbox exit report — Point-of-sale age estimator
 
-Sandbox `demo-001` · provider Demo Provider · generated 2026-10-11 14:57 UTC
+Sandbox `demo-001` · provider Demo Provider · generated 2026-10-11 15:18 UTC
 
 > Written proof of the activities carried out in the AI regulatory sandbox (Art. 57(7)). Generated from the evidence ledger; every figure here is reproducible from the accompanying evidence bundle, which can be checked offline with `histor verify`.
 
-Generated from ledger head `sha256:baa4bab472def282ce7dd6351c5364234962b5d64cf933c317e18f63993effc8`.
-Evidence bundle digest at generation: `sha256:aa2bbd2070073aef5eea4911fc6f7717048676adbb9e2b9ee0f383d5138aa6ea` (the bundle gains this report's ledger entry after this line is written).
+Generated from ledger head `sha256:b6109f9dc3240bf20013428bad091073e8ac315d6d17559e46e85e77f7d85ab6`.
+Evidence bundle digest at generation: `sha256:de240869830d1299685c2c878f89ba5e09fd8d5c12f93bb2ecb8690402df2147` (the bundle gains this report's ledger entry after this line is written).
 
-Written proof (draft implementing act Art. 6(2)): `sha256:2777e0211938bf809e0a908f8048192492845af19efffd270d84a17e770177c0`. Signing this report signs that hash too.
+Written proof (draft implementing act Art. 6(2)): `sha256:f1a863771eaa1ce7d77e5cb37465506b5bdbcf5c82eb84ac6949307fe51e9d28`. Signing this report signs that hash too.
 
 Not a declaration of conformity: this report does not have the status or legal effect of one under Art. 47 (draft implementing act Art. 6(4)).
-Participation completed 2026-10-11T14:57:47.661Z; this report is due to the participant by 2026-12-11T14:57:47.661000+00:00 (Art. 6(4), two months).
+Participation completed 2026-10-11T15:18:38.490Z; this report is due to the participant by 2026-12-11T15:18:38.490000+00:00 (Art. 6(4), two months).
 
 ## 1. General description of the AI system (Annex IV, 1)
 
@@ -33,7 +33,7 @@ Participation completed 2026-10-11T14:57:47.661Z; this report is due to the part
 ### `lab-heldout-v1` — independent heldout
 
 - **Commitment**: `sha256:bb2753c8260f1bf91e64c428bf103ca6e5e11ae089616010e5dfcd69e05b55e1`
-- **Committed**: seq 11, 2026-10-11T14:57:33.850Z
+- **Committed**: seq 11, 2026-10-11T15:18:24.848Z
 - **Held by**: test_lab
 - **Group attributes carried**: skin_tone_band, sex, age_band
 - **Special-category data**: yes — racial_or_ethnic_origin, biometric_data_for_unique_identification
@@ -96,7 +96,7 @@ Process indicators agreed in the plan (EUSAiR USF Annex XI, performance metrics)
 
 ## 5. Results, including accuracy by group (Annex IV, 3 and 4)
 
-### Run 1 — **FAIL** (2026-10-11T14:57:34Z to 2026-10-11T14:57:39Z)
+### Run 1 — **FAIL** (2026-10-11T15:18:24Z to 2026-10-11T15:18:30Z)
 
 **`accuracy_by_group`** — fail
 
@@ -139,7 +139,7 @@ Process indicators agreed in the plan (EUSAiR USF Annex XI, performance metrics)
 - threshold `min_log_coverage` gte 1.0: observed 1 - held
 - threshold `max_unmatched_request_ids` lte 0.0: observed 0 - held
 
-### Run 2 — **PASS** (2026-10-11T14:57:42Z to 2026-10-11T14:57:47Z)
+### Run 2 — **PASS** (2026-10-11T15:18:33Z to 2026-10-11T15:18:38Z)
 
 **`accuracy_by_group`** — pass
 
@@ -197,21 +197,21 @@ thing the participant tried that the plan did not permit.
 
 **Run 1** — `local_process`
 - **NO ISOLATION WAS ENFORCED.** This run executed as ordinary processes on one host. The results describe what the model answered and establish nothing about whether it could reach the data or the network. Not sandbox evidence.
-- Relay hash log: `sha256:cbeae89f40ae3b396c1e614c16080bcadd1d908d7ee111bc25cd4afb4142dd63`
-- Model decision log: `sha256:cc5bf0550d36f22b2f43c96c8226d8fd64c17d235f15a712ad9970e6cf24378a`
+- Relay hash log: `sha256:a498cf00a4d0dc39c62b70dc033dc40690bc44056207ef1767f2f2f042b7ee30`
+- Model decision log: `sha256:bc7db8cab8250105b3c73c817be5c0496a68cd5cd9b623e0bd728d199e169c7e`
 
 **Run 2** — `local_process`
 - **NO ISOLATION WAS ENFORCED.** This run executed as ordinary processes on one host. The results describe what the model answered and establish nothing about whether it could reach the data or the network. Not sandbox evidence.
-- Relay hash log: `sha256:b779fa8565983ea98f9b3a8c0c90174f9e65eacd3da7fab42250082279c55929`
-- Model decision log: `sha256:b329ada8dbccc2538019f97118bf2d39e7aa0e7ce7e4519d70e46a1b9d050293`
+- Relay hash log: `sha256:bf9c7829db0205c7c8841e0d152a26636b8a08e8847a0650b753df91ac000233`
+- Model decision log: `sha256:a79acb3801c204a843ebd2f50930ac0abcb4127ee7655139092675ff4d0c8c42`
 
 ## 8. Deletion (Art. 59(1)(g))
 
-- **crypto_shredding** at 2026-10-11T14:57:47+00:00
+- **crypto_shredding** at 2026-10-11T15:18:38+00:00
   - Key scopes: data/demo-001/lab-heldout-v1
   - Effect: The data keys are gone; the ciphertext they protected is permanently unreadable. Test images cannot be recovered by anyone, including the sandbox operator.
   - Retained: The decision log, the relay hash log and the ledger are retained. They carry hashes, metrics and signatures and no test data; the ledger also names the parties' staff who acted. Art. 19(1) requires them to be kept for at least six months.
-  - Ledger entry: seq 24, hash `sha256:baa4bab472def282ce7dd6351c5364234962b5d64cf933c317e18f63993effc8`
+  - Ledger entry: seq 24, hash `sha256:b6109f9dc3240bf20013428bad091073e8ac315d6d17559e46e85e77f7d85ab6`
 
 ## 9. Post-market monitoring (Annex IV, 9)
 
@@ -219,7 +219,7 @@ Out of scope for this participation. The sandbox establishes performance under t
 
 ## 10. Verification
 
-Generated by histor 0.1.1, from commit `2344c1ce43e7a0b3592a407fbfeefd0cae009e7f`.
+Generated by histor 0.1.2, from commit `82f965fc4a4e08ab2688a23d1bf49aa7dcf77948`.
 
 ```
   ok    bundle_version: is this a bundle format this verifier knows how to check?
@@ -296,7 +296,7 @@ Generated by histor 0.1.1, from commit `2344c1ce43e7a0b3592a407fbfeefd0cae009e7f
         consistently. Pass them from outside, with --anchors or the --expect-*
         options.
   ok    bundle_digest: does the bundle match the digest in its own manifest?
-        sha256:aa2bbd2070073aef5eea4911fc6f7717048676adbb9e2b9ee0f383d5138aa6ea
+        sha256:de240869830d1299685c2c878f89ba5e09fd8d5c12f93bb2ecb8690402df2147
 
 VERIFIED — 18 checks passed, 7 warning(s)
 

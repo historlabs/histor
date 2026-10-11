@@ -10,14 +10,14 @@
   "completion": {
     "completed": true,
     "exit_entry_seq": 23,
-    "exit_report_due_by": "2026-12-11T14:57:47.661000+00:00",
-    "exited_at": "2026-10-11T14:57:47.661Z",
+    "exit_report_due_by": "2026-12-11T15:18:38.490000+00:00",
+    "exited_at": "2026-10-11T15:18:38.490Z",
     "keys_destroyed_entry_seq": 24,
     "suspended_at_exit": false
   },
   "evidence": {
-    "bundle_digest": "sha256:aa2bbd2070073aef5eea4911fc6f7717048676adbb9e2b9ee0f383d5138aa6ea",
-    "ledger_head": "sha256:baa4bab472def282ce7dd6351c5364234962b5d64cf933c317e18f63993effc8"
+    "bundle_digest": "sha256:de240869830d1299685c2c878f89ba5e09fd8d5c12f93bb2ecb8690402df2147",
+    "ledger_head": "sha256:b6109f9dc3240bf20013428bad091073e8ac315d6d17559e46e85e77f7d85ab6"
   },
   "goals": [
     {
@@ -73,7 +73,7 @@
     "provider": "Demo Provider",
     "system_name": "Point-of-sale age estimator"
   },
-  "plan_digest": "sha256:ae2c857ca4a639da97a7227eb89f58372ef111b68dac81bf490da242e44d7089",
+  "plan_digest": "sha256:e15693f14540fb6cf25e639f05a2fa4035be05468915f60736759c9d43186cf3",
   "plan_gaps": [],
   "requirements": {
     "challenges_examined": [

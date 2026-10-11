@@ -54,6 +54,14 @@ test, which is the intended outcome rather than a limitation of the harness.
 }
 ```
 
+That is the profile's format, used when the plan carries no API contract. A plan that
+does (`api_contract` in `spec/plan.schema.json`, submitted by the provider when it
+configures its model) is asked with the contract instead: each field it declares, of
+its type and range, all required, nothing else, a string at most 64 characters. The
+plan's `answers` says which field gives each of `age`, `is_adult` and `confidence`
+(a field of the same name needs no entry), and the harness reads them through that
+binding. Its digest is recorded in the attestation as `response_schema_digest`.
+
 `confidence` is not decoration. The accuracy guidance we work against expects an
 output to carry a measure of its own uncertainty, and the harness uses it to report
 calibration alongside accuracy.
@@ -74,13 +82,15 @@ it sat. Items are shuffled and interleaved with decoys and repeats.
 
 ## 5. Response
 
-The relay validates every response against the schema above and rejects anything
-else — extra fields, non-JSON, oversized bodies — before the harness sees it. A
+The relay validates every response against the format the request asked for (the
+profile's, or the plan's contract) and rejects anything else — extra fields, non-JSON, oversized bodies — before the harness sees it. A
 rejected response is recorded and counts against the run.
 
 This is the control for "model hides data in responses". Extra fields are the obvious
 channel out of an isolated container, and strict validation at the relay closes it
-without the harness needing to be careful.
+without the harness needing to be careful. The relay accepts no wider format than a
+closed object of at most 16 number, boolean or short string fields, so a contract
+cannot reopen the channel.
 
 ## 6. Decision logging (the Article 12 test)
 

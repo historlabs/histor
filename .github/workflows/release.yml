@@ -156,4 +156,9 @@ jobs:
           name: release-dist
           path: dist
 
+      - name: Only the wheel and sdist go to PyPI
+        # The release file rides in release-dist to be signed and attested with them,
+        # but PyPI refuses anything that is not a distribution.
+        run: rm -f dist/*.release.json
+
       - uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2

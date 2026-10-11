@@ -52,9 +52,10 @@
           "minLength": 1
         },
         "returns": {
-          "description": "Each field of the model's answer and its type.",
+          "description": "Each field of the model's answer and its type: at most 16, as the relay holds a response to a closed object of a few typed fields (a string at most 64 characters).",
           "type": "object",
           "minProperties": 1,
+          "maxProperties": 16,
           "propertyNames": {
             "pattern": "^[a-z][a-z0-9_]{0,63}$"
           },
